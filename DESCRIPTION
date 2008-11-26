@@ -1,0 +1,10 @@
+Package: scanpath
+Type: Package
+Title: Provides a similarity measure for patterns of eye movements (scanpaths)
+Version: 1.0
+Date: 2008-11-12
+Author: Titus v.d. Malsburg
+Maintainer: Titus v.d. Malsburg <malsburg@gmail.com>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
+LazyLoad: yes
