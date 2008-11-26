@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 void print_matrix(double** d, int n, int m)
@@ -14,7 +15,7 @@ void print_matrix(double** d, int n, int m)
 	}
 }
 
-/* NOTE: Is inlining equivalient to making this a macro?  Check out
+/* NOTE: Is inlining equivalent to making this a macro?  Check out
  * always_inline (non-standard GCC feature).  According to the GCC manual it's
  * almost as fast as a macro (whatever that means). */
 inline double fmin3(double a, double b, double c)
@@ -69,17 +70,18 @@ void free_matrix(double** d, int* ns) {
 
 /* 
  * Computes the similarity of two scanpaths.  Fixation sites are defined using
- * x and y coodinates.  ns is the number of fixations, sx is an array with the
+ * x and y coordinates.  ns is the number of fixations, sx is an array with the
  * x coordinates of the fixations (length *ns), sy are the y-coordinates, sd
  * the fixation durations (usually in milliseconds)
  * */
-void cscasim(int* ns, double* sx, double* sy, double* sd,
-			 int* nt, double* tx, double* ty, double* td,
+void cscasim(int* ns, double* slon, double* slat, double* sd,
+			 int* nt, double* tlon, double* tlat, double* td,
 			 double* modulator,
 			 double* result)
 {
 	double** d;
 	double distance;
+    double d_lon, cos_d_lon, sin_d_lon, cos_slat, cos_tlat, sin_slat, sin_tlat;
 	double cost;
 	int i, j;
 	int m, n;
@@ -93,9 +95,24 @@ void cscasim(int* ns, double* sx, double* sy, double* sd,
 
 	for (i=0; i < n; i++) {
 		for (j=0; j < m; j++) {
-			/* euclidean distance */
-			distance = sqrt(pow(tx[j] - sx[i], 2.0) +
-							pow(ty[j] - sy[i], 2.0));
+
+            /* great circle distance using the Vincenty formula for better
+             * precision */
+			d_lon = slon[i] - tlon[j];
+            cos_d_lon = cos(d_lon);
+            sin_d_lon = sin(d_lon);
+            cos_slat = cos(slat[i]);
+            cos_tlat = cos(tlat[j]);
+            sin_slat = sin(slat[i]);
+            sin_tlat = sin(tlat[j]);
+
+            distance =
+                atan2(sqrt(pow(cos_tlat * sin(d_lon), 2)
+                           + pow(cos_slat * sin_tlat
+                              - sin_slat * cos_tlat * cos_d_lon, 2)),
+                      sin_slat * sin_tlat + cos_slat * cos_tlat * cos_d_lon);
+            distance *= 180/M_PI;
+
 			/* cortical magnification */
 			distance = pow(*modulator, distance);
 
@@ -111,6 +128,8 @@ void cscasim(int* ns, double* sx, double* sy, double* sd,
 	}
 
 	*result = d[n][m];
+
+	/* *result /= n + m; */
 
 	/* free memory */
 
@@ -159,6 +178,7 @@ void cscasim_roi(int* ns, int* sroi, double* sd,
 	}
 
 	*result = d[n][m];
+	/* *result /= n + m; */
 
 	/* free memory */
 

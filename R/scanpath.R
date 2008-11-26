@@ -2,37 +2,55 @@
 # Author: Titus v.d. Malsburg <malsburg@gmail.com>
 
 # Projects from plane coordinates to lat-lon on an sphere representing the
-# visual field (gnomonic projection).
-# See http://mathworld.wolfram.com/GnomonicProjection.html.  The formulae
-# simplify because we set phi_1 and lambda_0 to 0.
-visual_field <- function(x, y, center_x, center_y, viewing_distance, unit_size) {
-  x <- (x - center_x) * unit_size / viewing_distance
-  y <- (y - center_y) * unit_size / viewing_distance
+# visual field (inverse gnomonic projection).
+# See http://mathworld.wolfram.com/GnomonicProjection.html.
+inverse_gnomonic <- function(x, y, center_x, center_y, distance,
+                             unit_size)
+{
+  x <- (x - center_x) * unit_size / distance
+  y <- (y - center_y) * unit_size / distance
 
   rho <- sqrt(x**2 + y**2)
   c <- atan(rho)
 
   # FIXME: at point 0,0 we get NaNs
   # NOTE: 180/pi converts radians to degrees
+  # NOTE: The formulae simplify because we set phi_1 and lambda_0 to 0.  See
+  # the above.mentioned link.
   sin_c <- sin(c)
   lat <- asin(y * sin_c / rho) * 180/pi
-  lon <- atan(x * sin_c / (rho * cos(c))) * 180/pi
-
+  lon <- atan2(x * sin_c, rho * cos(c)) * 180/pi
   data.frame(lat, lon)
 }
 
+visual_field_ <- function(data, center_x, center_y, viewing_distance,
+                          unit_size)
+{
+    latlon <- inverse_gnomonic(data$x, data$y, center_x, center_y,
+                               viewing_distance, unit_size)
+    data$lat <- latlon$lat
+    data$lon <- latlon$lon
+    return(data)
+}
+
 # Calculates the pair-wise similarities of scanpaths using scasim:
-scasim <- function(data, formula, modulator = 0.83) {
-  records <- prepare_data(data, formula)
-  if (length(records) == 4)
-    distances(records, cscasim_wrapper)
-  else if (length(records) == 3)
-    distances(records, cscasim_roi_wrapper)
+scasim <- function(data, formula, center_x, center_y, viewing_distance,
+                   unit_size, modulator = 0.83)
+{
+  data <- prepare_data(data, formula)
+  if (length(data) == 4) {
+    data <- visual_field_(data, center_x, center_y,
+                          viewing_distance, unit_size)
+    distances(data, cscasim_wrapper)
+  } else if (length(data) == 3) {
+    distances(data, cscasim_roi_wrapper)
+  }
 }
 
 # Arranges the data in a format suitable for later processing.  (This way, we
 # don't have to carry around the formula.)
-prepare_data <- function(data, formula) {
+prepare_data <- function(data, formula)
+{
   # NOTE: There's certainly (and hopefully) a more idiomatic and more elegant
   # way of doing this:
   names <- rownames(attributes(terms(formula))$factors)
@@ -41,12 +59,12 @@ prepare_data <- function(data, formula) {
                            data[[names[2]]],          # x-coordinate
                            data[[names[3]]],          # y-coordinate
                            data[[names[4]]])          # fixation duration
-    colnames(df) <- c("trial_id", "fix_x", "fix_y", "fix_d")
+    colnames(df) <- c("trial_id", "x", "y", "d")
   } else if (length(names) == 3) {
     df <- cbind.data.frame(factor(data[[names[1]]]),  # trial_id
                            data[[names[2]]],          # roi
                            data[[names[3]]])          # fixation duration
-    colnames(df) <- c("trial_id", "roi", "fix_d")
+    colnames(df) <- c("trial_id", "roi", "d")
   }
   return(df)
 }
@@ -56,7 +74,8 @@ prepare_data <- function(data, formula) {
 # Just partition the matrix and let a thread run over each submatrix.  We would
 # have to dig into reading data.frames and the like using stuff from
 # Rinternals.h, though.
-distances <- function(records, fun) {
+distances <- function(records, fun)
+{
   trials <- split(records, records$trial_id, drop=TRUE)
   n <- length(trials)
   m <- matrix(nrow=n, ncol=n)
@@ -83,30 +102,32 @@ distances <- function(records, fun) {
 
 # Wrapper for the implementation in C:
 # s and t are data frames holding one trial each.
-cscasim_wrapper <- function(s,t) {
+cscasim_wrapper <- function(s,t)
+{
   .C(cscasim,
-     as.integer(length(s$fix_x)),
-     as.double(s$fix_x),
-     as.double(s$fix_y),
-     as.double(s$fix_d),
-     as.integer(length(t$fix_x)),
-     as.double(t$fix_x),
-     as.double(t$fix_y),
-     as.double(t$fix_d),
+     as.integer(length(s$x)),
+     as.double(s$lon),
+     as.double(s$lat),
+     as.double(s$d),
+     as.integer(length(t$x)),
+     as.double(t$lon),
+     as.double(t$lat),
+     as.double(t$d),
      0.83,
      result = double(1))$result
 }
 
 # Wrapper for the implementation in C:
 # s and t are data frames holding one trial each.
-cscasim_roi_wrapper <- function(s,t) {
+cscasim_roi_wrapper <- function(s,t)
+{
   .C(cscasim_roi,
      as.integer(length(s$roi)),
      as.integer(s$roi),
-     as.double(s$fix_d),
+     as.double(s$d),
      as.integer(length(t$roi)),
      as.integer(t$roi),
-     as.double(t$fix_d),
+     as.double(t$d),
      result = double(1))$result
 }
 
