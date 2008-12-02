@@ -1,0 +1,46 @@
+\name{inverse.gnomonic}
+
+\alias{inverse.gnomonic}
+
+\title{Project coordinates from a plane to a hemisphere}
+
+\description{Performs an inverse gnomonic projection, i.e. a projection from a
+plane to a hemisphere of which it is a tangent plane.  The resulting
+coordinates are given as latitude and longitude.}
+
+\usage{inverse.gnomonic(x, y, center_x, center_y, distance, unit_size = 1)}
+
+\arguments{
+  \item{x, y}{are vectors with the coordinates to project.}
+  \item{center_x, center_y}{is the point on the plane where the hemisphere
+  touches the plane.}
+  \item{distance}{is distance of the (sphere) center of the hemisphere to the
+  plane.}
+  \item{unit_size}{if the unit of the coordinates is different from the unit of
+  the distance, \code{unit_size} specifies thier ratio.  One unit in the
+  coordinate system is \code{unit_size * unit of distance}.  Example: If the
+  coordinates are pixels on a screen with 60 dpi and the unit of the distance
+  is inches, \code{unit_size} has to be set to 1/60.}
+}
+
+%\details{ }
+
+\value{A data frame with columns \code{lat} and \code{lon}}
+
+\references{Wikipedia explains the relevant math:
+http://en.wikipedia.org/wiki/Trigonometric\_function\#Tangent }
+
+\author{ Titus v.d. Malsburg }
+
+\seealso{ See also \code{\link{scasim}}.}
+
+\examples{
+data(eyemovements)
+# Projecting eyetracking data to the visual field.  The coordinatess are pixels
+# of the screen on which the stimuli were presented.  The viewing distance was
+# 60 cm, one pixel was 1/30 cm.
+latlon <- inverse.gnomonic(eyemovements$fix_x, eyemovements$fix_y,
+                           512, 384, 20, 1/10)
+plot(latlon$lon, latlon$lat)
+}
+\keyword{ manip }
