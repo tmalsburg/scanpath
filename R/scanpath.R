@@ -4,8 +4,8 @@
 # Projects from plane coordinates to lat-lon on an sphere representing the
 # visual field (inverse gnomonic projection).
 # See http://mathworld.wolfram.com/GnomonicProjection.html.
-inverse_gnomonic <- function(x, y, center_x, center_y, distance,
-                             unit_size)
+inverse.gnomonic <- function(x, y, center_x, center_y, distance,
+                             unit_size = 1)
 {
   x <- (x - center_x) * unit_size / distance
   y <- (y - center_y) * unit_size / distance
@@ -23,10 +23,11 @@ inverse_gnomonic <- function(x, y, center_x, center_y, distance,
   data.frame(lat, lon)
 }
 
+# Convenience wrapper for inverse.gnomonic:
 visual_field_ <- function(data, center_x, center_y, viewing_distance,
                           unit_size)
 {
-    latlon <- inverse_gnomonic(data$x, data$y, center_x, center_y,
+    latlon <- inverse.gnomonic(data$x, data$y, center_x, center_y,
                                viewing_distance, unit_size)
     data$lat <- latlon$lat
     data$lon <- latlon$lon
@@ -38,13 +39,15 @@ scasim <- function(data, formula, center_x, center_y, viewing_distance,
                    unit_size, modulator = 0.83)
 {
   data <- prepare_data(data, formula)
-  if (length(data) == 4) {
-    data <- visual_field_(data, center_x, center_y,
-                          viewing_distance, unit_size)
-    distances(data, cscasim_wrapper)
-  } else if (length(data) == 3) {
-    distances(data, cscasim_roi_wrapper)
-  }
+  data <- visual_field_(data, center_x, center_y,
+                        viewing_distance, unit_size)
+  distances(data, cscasim_wrapper)
+}
+
+scasim.roi <- function(data, formula)
+{
+  data <- prepare_data(data, formula)
+  distances(data, cscasim_roi_wrapper)
 }
 
 # Arranges the data in a format suitable for later processing.  (This way, we
