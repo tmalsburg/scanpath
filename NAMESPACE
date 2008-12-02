@@ -1,2 +1,2 @@
 useDynLib(scanpath, cscasim_roi, cscasim)
-export(scasim, inverse_gnomonic)
+export(scasim, inverse.gnomonic)
