@@ -1,7 +1,7 @@
 \encoding{utf-8}
 \name{eyemovements}
 \alias{eyemovements}
-\title{Eyetracking data from one subject solving a geometrical puzzle}
+\title{Eye tracking data from one subject solving geometrical puzzles}
 \description{
 	The \code{eyemovements} data frame has 150 trials of one subject that has
 	to recognize geometrical relations between two sets of shapes.
