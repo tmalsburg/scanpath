@@ -16,7 +16,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
   # FIXME: at point 0,0 we get NaNs
   # NOTE: 180/pi converts radians to degrees
   # NOTE: The formulae simplify because we set phi_1 and lambda_0 to 0.  See
-  # the above.mentioned link.
+  # the above-mentioned link.
   sin_c <- sin(c)
   lat <- asin(y * sin_c / rho) * 180/pi
   lon <- atan2(x * sin_c, rho * cos(c)) * 180/pi
@@ -69,6 +69,8 @@ prepare_data <- function(data, formula)
                            data[[names[3]]])          # fixation duration
     colnames(df) <- c("trial_id", "roi", "d")
   }
+  # We operate with log fixation times:
+  df$d <- log(df$d)
   return(df)
 }
 
