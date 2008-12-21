@@ -128,8 +128,7 @@ void cscasim(int* ns, double* slon, double* slat, double* sd,
 	}
 
 	*result = d[n][m];
-
-	/* *result /= n + m; */
+	*result /= n + m;
 
 	/* free memory */
 

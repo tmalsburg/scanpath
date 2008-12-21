@@ -81,7 +81,7 @@ prepare_data <- function(data, formula)
 # Rinternals.h, though.
 distances <- function(records, fun)
 {
-  trials <- split(records, records$trial_id, drop=TRUE)
+  trials <- split_into_trials(records, records$trial_id)
   n <- length(trials)
   m <- matrix(nrow=n, ncol=n)
 
