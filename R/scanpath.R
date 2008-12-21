@@ -1,6 +1,37 @@
 
 # Author: Titus v.d. Malsburg <malsburg@gmail.com>
 
+# Creates a data.frame with the same layout as the given data frame except: 1.)
+# For each trial only the first records is contained.  2.) Columns that vary
+# within trials are dropped.  In other words trial.infos return a data frame
+# with the attributes of the trials.
+trial.infos <- function (data, trial_id)
+{
+
+  trials <- split(data, trial_id, drop=TRUE)
+
+  # First check which columns do not vary within a trial:
+  nonvarying_cols <- trials[[1]][1,] == trials[[1]][1,]
+  for (t in 1:length(trials)) {
+
+    curr_trial <- trials[[t]]
+    first_row <- curr_trial[1,]
+    for (r in 2:length(curr_trial[1])) {
+      nonvarying_cols <- (curr_trial[r,] == first_row) & nonvarying_cols
+    }
+  }
+
+  # Create a record for each trial with only the non-varying columns:
+  trial_infos <- trials[[1]][1,]
+  trial_infos <- subset(trial_infos, select=nonvarying_cols)
+  for (t in 2:length(trials)) {
+    curr_trial <- trials[[t]][1,]
+    curr_trial <- subset(curr_trial, select=nonvarying_cols)
+    trial_infos <- rbind(curr_trial, trial_infos)
+  }
+  return(trial_infos)
+}
+
 # Projects from plane coordinates to lat-lon on an sphere representing the
 # visual field (inverse gnomonic projection).
 # See http://mathworld.wolfram.com/GnomonicProjection.html.
@@ -81,7 +112,7 @@ prepare_data <- function(data, formula)
 # Rinternals.h, though.
 distances <- function(records, fun)
 {
-  trials <- split_into_trials(records, records$trial_id)
+  trials <- split(records, records$trial_id, drop=TRUE)
   n <- length(trials)
   m <- matrix(nrow=n, ncol=n)
 
