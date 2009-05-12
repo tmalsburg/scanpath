@@ -2,7 +2,7 @@
 
 \alias{inverse.gnomonic}
 
-\title{Project coordinates from a plane to a hemisphere}
+\title{Project Coordinates From a Plane to a Hemisphere}
 
 \description{Performs an inverse gnomonic projection, i.e. a projection from a
 plane to a hemisphere of which the plane is a tangent.  The resulting
@@ -37,9 +37,9 @@ http://en.wikipedia.org/wiki/Trigonometric\_function\#Tangent }
 data(eyemovements)
 # Projecting eye tracking data to the visual field.  The coordinates are pixels
 # of the screen on which the stimuli were presented.  The viewing distance was
-# 60 cm, one pixel was 1/30 cm.
+# 60 cm, the size of one pixel was 1/30 cm.
 ll <- inverse.gnomonic(eyemovements$fix_x, eyemovements$fix_y,
-                       512, 384, 20, 1/10)
+                       512, 384, 20, 1/30)
 plot(ll$lon, ll$lat)
 }
 \keyword{ manip }
