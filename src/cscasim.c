@@ -88,8 +88,6 @@ void cscasim(int* ns, double* slon, double* slat, double* sd,
 	n = *ns;
 	m = *nt;
 
-    printf("modulator: %f\n", *modulator);
-
 	/* allocate memory for 2-d matrix: */
 	d = create_matrix(ns, sd, nt, td);
 
@@ -111,38 +109,23 @@ void cscasim(int* ns, double* slon, double* slat, double* sd,
             angle = acos(sin(sb) * sin(tb) +
                     cos(sb) * cos(tb) * cos(sa - ta)) * (180/M_PI);
 
-            if (i==0 && j==0)
-                printf("angle: %f\n", angle);
-
 			/* approximation of cortical magnification: */
 			mixer = pow(*modulator, angle);
-
-            if (i==0 && j==0)
-                printf("mixer: %f\n", mixer);
 
 			/* cost for substitution: */
 			cost = fabs(td[j] - sd[i]) * mixer +
 			       (td[j] + sd[i])     * (1.0 - mixer);
 
-            if (i==0 && j==0)
-                printf("cost: %f\n", cost);
-
 			/* select optimal edit operation: */
 			d[i+1][j+1] = fmin3(d[i][j+1] + sd[i],
 								d[i+1][j] + td[j],
 								d[i][j]   + cost);
-
-            if (i==0 && j==0)
-                printf("selected: %f\n", d[i+1][j+1]);
-            
 		}
 	}
 
 	*result = d[n][m];
 
 	/* free memory: */
-
-    print_matrix(d, n, m);
 
 	free_matrix(d, ns);
 
