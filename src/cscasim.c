@@ -80,106 +80,69 @@ void cscasim(int* ns, double* slon, double* slat, double* sd,
 			 double* result)
 {
 	double** d;
-	double distance;
-    double d_lon, cos_d_lon, sin_d_lon, cos_slat, cos_tlat, sin_slat, sin_tlat;
+	double angle, mixer;
+    double sa, sb, ta, tb;
 	double cost;
 	int i, j;
 	int m, n;
 	n = *ns;
 	m = *nt;
 
-	/* allocate memory for 2-d matrix */
+    printf("modulator: %f\n", *modulator);
+
+	/* allocate memory for 2-d matrix: */
 	d = create_matrix(ns, sd, nt, td);
 
-	/* calculate distance */
+	/* calculate scanpath dissimilarity: */
 
+    /* loop over fixations in scanpath s: */
 	for (i=0; i < n; i++) {
+        /* loop over fixations in scanpath t: */
 		for (j=0; j < m; j++) {
 
-            /* great circle distance using the Vincenty formula for better
-             * precision */
-			d_lon = slon[i] - tlon[j];
-            cos_d_lon = cos(d_lon);
-            sin_d_lon = sin(d_lon);
-            cos_slat = cos(slat[i]);
-            cos_tlat = cos(tlat[j]);
-            sin_slat = sin(slat[i]);
-            sin_tlat = sin(tlat[j]);
+            /* calculating angle between fixation targets: */
+            sa = slon[i] / (180/M_PI);
+            ta = tlon[j] / (180/M_PI);
+            sb = slat[i] / (180/M_PI);
+            tb = tlat[j] / (180/M_PI);
 
-            distance =
-                atan2(sqrt(pow(cos_tlat * sin(d_lon), 2)
-                           + pow(cos_slat * sin_tlat
-                              - sin_slat * cos_tlat * cos_d_lon, 2)),
-                      sin_slat * sin_tlat + cos_slat * cos_tlat * cos_d_lon);
-            distance *= 180/M_PI;
+            /* This formula is not terribly precise but the error is way
+             * smaller than the spatial noise in current eye trackers. */
+            angle = acos(sin(sb) * sin(tb) +
+                    cos(sb) * cos(tb) * cos(sa - ta)) * (180/M_PI);
 
-			/* cortical magnification */
-			distance = pow(*modulator, distance);
+            if (i==0 && j==0)
+                printf("angle: %f\n", angle);
 
-			/* cost for substituting */
-			cost = fabs((td[j] - sd[i]) * distance +
-						(td[j] + sd[i]) * (1.0 - distance));
+			/* approximation of cortical magnification: */
+			mixer = pow(*modulator, angle);
 
-			/* selection of edit operation */
+            if (i==0 && j==0)
+                printf("mixer: %f\n", mixer);
+
+			/* cost for substitution: */
+			cost = fabs(td[j] - sd[i]) * mixer +
+			       (td[j] + sd[i])     * (1.0 - mixer);
+
+            if (i==0 && j==0)
+                printf("cost: %f\n", cost);
+
+			/* select optimal edit operation: */
 			d[i+1][j+1] = fmin3(d[i][j+1] + sd[i],
 								d[i+1][j] + td[j],
 								d[i][j]   + cost);
+
+            if (i==0 && j==0)
+                printf("selected: %f\n", d[i+1][j+1]);
+            
 		}
 	}
 
 	*result = d[n][m];
-	*result /= n + m;
 
-	/* free memory */
+	/* free memory: */
 
-	free_matrix(d, ns);
-
-}
-
-/* 
- * Computes the similarity of two scanpaths.  Fixations sites are given as
- * regions of interest without spatial information about the arrangement of the
- * ROIs.  ns is the number of fixations, roi is an array with the id of the
- * fixated ROI (length *ns), sd the fixation durations (usually in
- * milliseconds)
- * */
-void cscasim_roi(int* ns, int* sroi, double* sd,
-				 int* nt, int* troi, double* td,
-				 double* result)
-{
-	double** d;
-	double distance;
-	double cost;
-	int i, j;
-	int m, n;
-	n = *ns;
-	m = *nt;
-
-	/* allocate memory for 2-d matrix */
-	d = create_matrix(ns, sd, nt, td);
-
-	/* calculate distance */
-
-	for (i=0; i < n; i++) {
-		for (j=0; j < m; j++) {
-			/* roi distance */
-			distance = sroi[i] == troi[j];
-
-			/* cost for substituting */
-			cost = fabs((td[j] - sd[i]) * distance +
-						(td[j] + sd[i]) * (1.0 - distance));
-
-			/* selection of edit operation */
-			d[i+1][j+1] = fmin3(d[i][j+1] + sd[i],
-								d[i+1][j] + td[j],
-								d[i][j] + cost);
-		}
-	}
-
-	*result = d[n][m];
-	/* *result /= n + m; */
-
-	/* free memory */
+    print_matrix(d, n, m);
 
 	free_matrix(d, ns);
 
