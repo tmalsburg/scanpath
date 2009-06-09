@@ -1,35 +1,43 @@
 
-# Author: Titus v.d. Malsburg <malsburg@gmail.com>
+# Author: Titus v.d. Malsburg <malsburg@uni-potsdam.de>
+# Written in 2008 and 2009.
 
 # Creates a data.frame with the same layout as the given data frame except: 1.)
-# For each trial only the first records is contained.  2.) Columns that vary
-# within trials are dropped.  In other words trial.infos return a data frame
-# with the attributes of the trials.
-trial.infos <- function (data, trial_id)
+# For each group (as defined by groups) only the first records is contained.
+# 2.) Columns that vary within groups are dropped.  constant.vars can be used
+# to extract trial infos from a data frame containing fixations or subject
+# infos from a data frame containing trial infos.
+
+constant.vars <- function (data, groups)
 {
 
-  trials <- split(data, trial_id, drop=TRUE)
+  groups <- eval(substitute(groups), data, parent.frame())
 
-  # First check which columns do not vary within a trial:
-  nonvarying_cols <- trials[[1]][1,] == trials[[1]][1,]
-  for (t in 1:length(trials)) {
+  # First figure out which columns do not vary
+  # within a trial:
 
-    curr_trial <- trials[[t]]
-    first_row <- curr_trial[1,]
-    for (r in 2:length(curr_trial[1])) {
-      nonvarying_cols <- (curr_trial[r,] == first_row) & nonvarying_cols
-    }
+  groups <- split(data, groups, drop=TRUE)
+  all.equal <- function(x) all(x==x[[1]])
+  cols.homogenous <- function(d) sapply(d, all.equal)
+  homogeneity <- data.frame(t(sapply(groups, cols.homogenous)))
+  constant.cols <- sapply(homogeneity, all)
+  varying.cols <- colnames(data)[!constant.cols]
+
+  if (all(constant.cols)) {
+    data["#"] <- 1
+    return(data)
   }
 
-  # Create a record for each trial with only the non-varying columns:
-  trial_infos <- trials[[1]][1,]
-  trial_infos <- subset(trial_infos, select=nonvarying_cols)
-  for (t in 2:length(trials)) {
-    curr_trial <- trials[[t]][1,]
-    curr_trial <- subset(curr_trial, select=nonvarying_cols)
-    trial_infos <- rbind(curr_trial, trial_infos)
-  }
-  return(trial_infos)
+  # Create new data frame with one record per group and only fields that have
+  # constant values within each group:
+
+  data_molten <- melt(data, measure.vars=varying.cols)
+  data_molten <- subset(data_molten, variable==varying.cols[1])
+  constant.vars <- cast(data_molten, ... ~ ., fun.aggregate=length)
+  constant.vars$variable <- NULL
+  no_fields <- length(colnames(constant.vars))
+  colnames(constant.vars)[no_fields] <- "#"
+  return(constant.vars)
 }
 
 # Projects from plane coordinates to lat-lon on an sphere representing the
@@ -55,7 +63,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 }
 
 # Convenience wrapper for inverse.gnomonic:
-visual_field_ <- function(data, center_x, center_y, viewing_distance,
+visual.field <- function(data, center_x, center_y, viewing_distance,
                           unit_size)
 {
     latlon <- inverse.gnomonic(data$x, data$y, center_x, center_y,
@@ -66,43 +74,59 @@ visual_field_ <- function(data, center_x, center_y, viewing_distance,
 }
 
 # Calculates the pair-wise similarities of scanpaths using scasim:
+
+#scasim(eyemovements, d~x+y|trial, 512, 384, 60, 1/20)
+
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
-                   unit_size, modulator = 0.83)
+                   unit_size, modulator=0.83, data2=NULL, formula2=formula)
 {
-  data <- prepare_data(data, formula)
-  data <- visual_field_(data, center_x, center_y,
-                        viewing_distance, unit_size)
-  distances(data, cscasim_wrapper)
+  data <- prepare.data(data, formula)
+
+  cscasim.wrapper2 <- function(s, t) cscasim.wrapper(s, t, modulator)
+
+  if (length(data) == 4)          # Coordinates were given:
+    data <- visual.field(data, center_x, center_y, viewing_distance, unit_size)
+
+  if (is.null(data2))
+    distances(data, cscasim.wrapper2)
+  else {
+    data2 <- prepare.data(data2, formula2)
+    if (length(data2) == 4)
+      data2 <- visual.field(data2, center_x, center_y, viewing_distance,
+                            unit_size)
+    distances(data, cscasim.wrapper2, t2=data2)
+  }
 }
 
-scasim.roi <- function(data, formula)
-{
-  data <- prepare_data(data, formula)
-  distances(data, cscasim_roi_wrapper)
+# Calculates the mean similarities of sub-sets of scanpaths as given by a
+# grouping variable.  For instance it groups is the subject id we get a matrix
+# of the similarities of subjects.
+set.scasim <- function(data, formula, sets, ...) {
+  sets <- factor(sets, ordered=TRUE)
+  # This nifty power move comes from Chuck C. Berry:
+  mat <- model.matrix(~0+sets)
+  tab <- table(sets)
+  d <- scasim(data, formula, ...)
+  means <- (t(mat) %*% d %*% mat) / outer( tab, tab )
+
+  id <- diag(length(levels(sets)))
+  means <- ifelse(id, 0, means)
+  colnames(means) <- rownames(means) <- levels(sets)
+  return(means)
 }
+
 
 # Arranges the data in a format suitable for later processing.  (This way, we
 # don't have to carry around the formula.)
-prepare_data <- function(data, formula)
-{
-  # NOTE: There's certainly (and hopefully) a more idiomatic and more elegant
-  # way of doing this:
-  names <- rownames(attributes(terms(formula))$factors)
-  if (length(names) == 4) {
-    df <- cbind.data.frame(factor(data[[names[1]]]),  # trial_id
-                           data[[names[2]]],          # x-coordinate
-                           data[[names[3]]],          # y-coordinate
-                           data[[names[4]]])          # fixation duration
-    colnames(df) <- c("trial_id", "x", "y", "d")
-  } else if (length(names) == 3) {
-    df <- cbind.data.frame(factor(data[[names[1]]]),  # trial_id
-                           data[[names[2]]],          # roi
-                           data[[names[3]]])          # fixation duration
-    colnames(df) <- c("trial_id", "roi", "d")
-  }
-  # We operate with log fixation times:
-  df$d <- log(df$d)
-  return(df)
+prepare.data <- function(data, formula) {
+  terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
+  # TODO: stopifnot
+  df <- data[terms]
+  if (length(terms) == 4)
+    colnames(df) <- c("d", "x", "y", "trial")
+  else if (length(terms) == 3)
+    colnames(df) <- c("d", "roi", "trial")
+  df
 }
 
 # Generic function for calculating pair-wise similarities / distances.
@@ -110,65 +134,85 @@ prepare_data <- function(data, formula)
 # Just partition the matrix and let a thread run over each submatrix.  We would
 # have to dig into reading data.frames and the like using stuff from
 # Rinternals.h, though.
-distances <- function(records, fun)
-{
-  trials <- split(records, records$trial_id, drop=TRUE)
-  n <- length(trials)
-  m <- matrix(nrow=n, ncol=n)
+distances <- function(t, fun, t2=NULL) {
 
-  for (i in 1:n) {
-    for (j in i:n) {
-      # NOTE: This is not necessarily true:
-      if (i==j) {
-        m[j,i] <- 0
-        next
-      }
-      s <- trials[[i]]
-      t <- trials[[j]]
-      if (nrow(s)<2 || nrow(t)<2) {
-        print("malformed trial")
-        m[j,i] <- m[i,j] <- 0
-      } else {
-        m[j,i] <- m[i,j] <- fun(s, t)
+  # Case where only one set of trials is given:
+  if (is.null(t2)) {
+    tid <- t$trial
+    t$trial <- NULL                 # Is supposed to make split faster.
+    t <- split.data.frame(t, tid, drop=TRUE)
+    m <- matrix(0, nrow=length(t), ncol=length(t))
+    for (i in 1:length(t)) {
+      s1 <- t[[i]]
+      for (j in i:length(t)) {
+        s2 <- t[[j]]
+        if (nrow(s1)<2 || nrow(s2)<2) {
+          print("malformed trial")
+          m[j,i] <- m[i,j] <- NA
+        } else if (i==j) {
+          m[j,i] <- m[i,j] <- 0
+        } else {
+          m[j,i] <- m[i,j] <- fun(s1, s2)
+        }
       }
     }
+    colnames(m) <- rownames(m) <- unique(tid)
+  # Case where two sets of trials are processed:
+  } else {
+    tid <- t$trial
+    t2id <- t2$trial
+    t$trial <- NULL
+    t2$trial <- NULL
+    t <- split.data.frame(t, tid, drop=TRUE)
+    t2 <- split.data.frame(t2, t2id, drop=TRUE)
+    m <- matrix(0, nrow=length(t), ncol=length(t2))
+    for (i in 1:length(t)) {
+      s1 <- t[[i]]
+      for (j in 1:length(t2)) {
+        s2 <- t2[[j]]
+        if (nrow(s1)<2 || nrow(s2)<2) {
+          print("malformed trial")
+          m[i,j] <- NA
+        } else {
+          m[i,j] <- fun(s1, s2)
+        }
+      }
+    }
+    rownames(m) <- unique(tid)
+    colnames(m) <- unique(t2id)
   }
   return(m)
 }
 
+
 # Wrapper for the implementation in C:
 # s and t are data frames holding one trial each.
-cscasim_wrapper <- function(s,t)
+cscasim.wrapper <- function(s, t, modulator=0.83)
 {
-  .C(cscasim,
-     as.integer(length(s$x)),
+  if ("roi" %in% colnames(s)) {
+    s$lon <- s$roi
+    t$lon <- t$roi
+    s$lat <- double(length(s$lon))
+    t$lat <- double(length(t$lon))
+    modulator <- 0
+  }
+  result <- .C(cscasim,
+     as.integer(length(s$lon)),
      as.double(s$lon),
      as.double(s$lat),
-     as.double(s$d),
-     as.integer(length(t$x)),
+     as.double(log(s$d)),
+     as.integer(length(t$lon)),
      as.double(t$lon),
      as.double(t$lat),
-     as.double(t$d),
-     0.83,
+     as.double(log(t$d)),
+     modulator,
      result = double(1))$result
+  result / (nrow(s) + nrow(t))
 }
 
-# Wrapper for the implementation in C:
-# s and t are data frames holding one trial each.
-cscasim_roi_wrapper <- function(s,t)
-{
-  .C(cscasim_roi,
-     as.integer(length(s$roi)),
-     as.integer(s$roi),
-     as.double(s$d),
-     as.integer(length(t$roi)),
-     as.integer(t$roi),
-     as.double(t$d),
-     result = double(1))$result
-}
 
 # Implementation in R, just for measuring the speed-up by using C.  The
-# speed-up gained by the C implementaiton is about factor 200 to 300!
+# speed-up gained by the C implementation is about factor 200 to 300!
 #scasim <- function (s, t) {
 #
 #  modulator <- 0.8
@@ -200,4 +244,98 @@ cscasim_roi_wrapper <- function(s,t)
 #  }
 #  return(d[m+1,n+1])
 #}
+
+#
+#  Plotting:
+#
+
+splice <- function(x, y) {
+  xy <- as.vector(rbind(x, y))
+  if (is.factor(x) && is.factor(y))
+    xy <- factor(xy, levels=1:length(levels(x)), labels=levels(x))
+  xy
+}
+
+plot.scanpaths <- function(formula, data, groups=NULL, panel=panel.scanpath,
+                           auto.key=if(!is.null(groups)) list(columns = 2, lines=TRUE),
+                           ...)
+{
+
+  groups <- eval(substitute(groups), data, parent.frame())
+  data <- prepare.data(data, formula)
+
+  args <- list(...)
+  terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
+  xlab <- terms[[2]]
+
+  if (length(data) == 3) {
+    colnames(data)[[2]] <- "x"
+    plot.func <- plot.scanpaths.1d
+    ylab <- "time"
+  } else {
+    plot.func <- plot.scanpaths.2d
+    ylab <- terms[[3]]
+  } 
+
+  if (!"xlab" %in% names(args))
+    args$xlab <- xlab
+  if (!"ylab" %in% names(args))
+    args$ylab <- ylab
+  
+  do.call(plot.func, c(list(data, "groups"=groups, "panel"=panel,
+                            auto.key=auto.key), args))
+}
+
+# TODO: Fix plots when ROIs are factor (currently it drops unused rois and puts
+# wrong labels on the x-axis).
+panel.scanpath <- function(x, y, groups=NULL, subscripts=NULL, ...) {
+
+  if (!is.null(groups) & !is.null(subscripts)) {
+    group <- as.integer(groups[subscripts][1])
+    colors <- trellis.par.get("superpose.line")$col
+    col <- colors[[((group-1)%%length(colors))+1]]
+    panel.lines(x, y, col=col, ...)
+  } else
+    panel.lines(x, y, ...)
+}
+
+plot.scanpaths.2d <- function(data, groups=NULL, panel=panel.scanpath,
+                              xlim=c(min(data$x), max(data$x)),
+                              ylim=c(min(data$y), max(data$y)),
+                              ...)
+{
+  xyplot(y~x|trial, data, panel=panel, xlim=xlim, ylim=ylim,
+         groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
+}
+
+plot.scanpaths.1d <- function(data, groups=NULL, panel=panel.scanpath,
+                              ylim=NULL, ...)
+{
+
+  # Create timeline y-axis from fixation durations:
+
+  l <- levels(data$trial)
+  trial <- as.factor(splice(data$trial, data$trial))
+  levels(trial) <- l
+
+  if (!is.null(groups)) 
+    groups <- splice(groups, groups)
+  x <- splice(data$x, data$x)
+  d <- splice(data$d, data$d)
+  s <- c(TRUE, diff(as.integer(as.factor(trial))) != 0)
+  d <- ifelse(s, 0, d)
+  idxs <- setdiff(2:nrow(data)*2, which(s)+1)
+
+  # CHECK: Is it possible to use filter or something similar here?
+  for (i in idxs) {
+    d[[i-1]] <- d[[i-2]]
+    d[[i]] <- d[[i]] + d[[i-1]]
+  }
+
+  if (is.null(ylim))
+    ylim <- c(min(d), max(d))
+    
+  xyplot(d~x|trial, data.frame(x=x, d=d, trial=trial),
+         panel=panel, ylim=ylim, groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
+}
 
