@@ -1,2 +1,2 @@
-useDynLib(scanpath, cscasim_roi, cscasim)
-export(scasim, inverse.gnomonic, trial.infos)
+useDynLib(scanpath, cscasim)
+export(scasim, inverse.gnomonic, constant.vars, plot.scanpaths, panel.scanpath)

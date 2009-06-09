@@ -1,0 +1,16 @@
+Version 1.01
+============
+Fixed two problem in the functions for plotting scanpaths regarding the
+treatment of factors:
+
+ 1.) When using factors for regions of interest (ROIs), the display dropped
+ unused ROIs on the x-axis rendering a somewhat misleading picture of the
+ scanpaths.
+
+ 2.) When using factors for a grouping variable (e.g. condition), it could
+ happen that plot.scanpaths confused the colors when at least one level in the
+ factor did not occur in a plot.
+
+Version 1.0
+============
+First official release.

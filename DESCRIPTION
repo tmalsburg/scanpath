@@ -1,10 +1,15 @@
 Package: scanpath
 Type: Package
-Title: Provides a similarity measure for patterns of eye movements (scanpaths)
-Version: 1.0
-Date: 2008-11-12
+Title: Analyzing Spatio-Temporal Patterns in Eye Movements.
+Version: 1.01
+Date: 2009-06-09
 Author: Titus v.d. Malsburg
 Maintainer: Titus v.d. Malsburg <malsburg@gmail.com>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Description: Provides a similarity measure for scanpaths that is sensitive to
+	spatial and temporal patterns.  This measure can be used, for example, to
+	perform cluster analyses on sets of scanpaths or to evaluate models of
+	oculo-motor control.
+License: GPL (>= 2)
+URL: http://www.ling.uni-potsdam.de/~malsburg/scasim/
 LazyLoad: yes
+Depends: reshape, lattice
