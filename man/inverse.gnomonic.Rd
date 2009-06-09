@@ -38,8 +38,8 @@ data(eyemovements)
 # Projecting eye tracking data to the visual field.  The coordinates are pixels
 # of the screen on which the stimuli were presented.  The viewing distance was
 # 60 cm, the size of one pixel was 1/30 cm.
-ll <- inverse.gnomonic(eyemovements$fix_x, eyemovements$fix_y,
-                       512, 384, 20, 1/30)
+ll <- inverse.gnomonic(eyemovements$x, eyemovements$y,
+                       512, 384, 60, 1/30)
 plot(ll$lon, ll$lat)
 }
 \keyword{ manip }

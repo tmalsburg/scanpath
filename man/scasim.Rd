@@ -1,8 +1,6 @@
 \name{scasim}
 
 \alias{scasim}
-\alias{scasim.roi}
-
 
 \title{ Calculate (dis)similarity of scanpaths }
 
@@ -11,9 +9,8 @@ Calculates the pair-wise dissimilarities of scanpaths using the Scasim measure.
 }
 
 \usage{
-scasim(data, formula, center_x, center_y, viewing_distance, unit_size, modulator = 0.83)
-
-scasim.roi(data, formula)
+scasim(data, formula, center_x, center_y, viewing_distance, unit_size, modulator
+= 0.83, data2=NULL, formula2=formula)
 }
 
 \arguments{
@@ -26,11 +23,14 @@ scasim.roi(data, formula)
   providing the IDs of the ROIs instead of the coordinates.  See the example
   data set provided with this package.}
   \item{formula}{tells which columns in the given data frame are relevant.  The
-  left-hand side specifies the column that holds trial IDs.  The right-hand
-  side consist of terms that specify x- and y-coordinate and duration of the
-  fixations, in that order.  In case fixation targets are ROIs, the right-hand
-  side consist of a term for the IDs of the ROIs and a term specifying the
-  column providing the fixation durations.}
+  left-hand side specifies the column that holds fixation duration  The
+  right-hand side consist of terms that specify x- and y-coordinate of the
+  fixations (in that order) conditioned on trial IDs.  In case fixation targets
+  are not given as coordinates but as ROIs, the right-hand side specifies the
+  column indicating the ROI conditioned on trial IDs.  In the latter case it is
+  not necessary to specify the parameters \code{center_x}, \code{center_y},
+  \code{viewing_distance} and \code{unit_size} because spatial relations among
+  fixation targets are not accounted for.  See examples below.}
   \item{center_x, center_y}{is the point in the coordinate system of the data
   that is targeted when the eye looks straight ahead (usually the center of
   the screen).  Only relevant for \code{scasim}.}
@@ -48,6 +48,13 @@ scasim.roi(data, formula)
   compared only with respect to their temporal patterns.  The default value
   approximates the sensitivity to spatial distance found in the human visual
   system.  Only relevant for \code{scasim}.}
+  \item{data2}{optionally provides a second set of scanpaths.  In this case
+  \code{scasim} computes the distances from each scanpath in the first set to
+  each scanpath in the second set.  The resulting matrix of distances is
+  therefore not necessarily square.}
+  \item{formula2}{specifies the relevant columns in \code{data2} in case they
+  are named differently in \code{data2} than in \code{data}.  \code{formula2}
+  defaults to \code{formula}.}
 }
 
 \details{When using \code{scasim}, the dissimilarity of two scanpaths
@@ -55,14 +62,26 @@ is assessed based on the distances of their fixation targets.  If the
 distances are really small, the dissimilarity will mostly be a function of just
 the differences of the fixation durations.  The evaluation of distance accounts
 for the particular way the human visual system magnifies the center of the
-visual field and the drop in acuity at its periphery.  When using
-\code{scasim.roi} any such considerations are not incorporated.}
+visual field and the drop in acuity at its periphery.
 
-\value{A matrix containing the pair-wise dissimilarities.}
+A detailed description of the similarity measure can be found here:
+http://www.ling.uni-potsdam.de/~malsburg/malsburg\_CUNY2008.pdf
 
-\references{Titus von der Malsburg and Shravan Vasishth (2008) A New Method for
+A tutorial for using the measure can be found here:
+http://www.ling.uni-potsdam.de/~malsburg/malsburg\_CUNY2009.pdf
+}
+
+\value{A matrix containing the pair-wise dissimilarities.  Columns and rows
+correspond to trials.  Their order is the same as the order of trials in
+\code{data}.}
+
+\references{Titus von der Malsburg and Shravan Vasishth (2008): A New Method for
 Analyzing Eye Movements. In Proceedings of the CUNY sentence processing
-conference, North Carolina }
+conference, North Carolina
+
+Titus von der Malsburg, Shravan Vasishth (2009): Analyzing Spatio-Temporal
+Patterns in Eye Movements: A Method and Software. In Proceedings of the CUNY
+sentence processing conference, Davis, California }
 
 \author{Titus von der Malsburg <malsburg@uni-potsdam.de>}
 
@@ -77,8 +96,8 @@ data(eyemovements)
 # Calculating dissimilarities: when looking straight ahead the gaze targets the
 # point with the coordinates (512,384), viewing distance (eye to screen) is 60
 # cm, 1 unit in the data (pixel) is 1/20 cm.
-dissimilarities <- scasim(eyemovements, trial_id ~ fix_x + fix_y + fix_d,
-                          512, 384, 60, 1/20)
+dissimilarities <- scasim(eyemovements, dur ~ x + y | trial,
+                          512, 384, 60, 1/30)
 
 # Using cmdscale for fitting a map:
 map <- cmdscale(dissimilarities)

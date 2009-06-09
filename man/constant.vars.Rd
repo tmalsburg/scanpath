@@ -48,14 +48,14 @@ data(eyemovements)
 # Calculating dissimilarities: when looking straight ahead the gaze targets the
 # point with the coordinates (512,384), viewing distance (eye to screen) is 60
 # cm, 1 unit in the data (pixel) is 1/20 cm.
-dissimilarities <- scasim(eyemovements, trial_id ~ fix_x + fix_y + fix_d,
-                          512, 384, 60, 1/20)
+dissimilarities <- scasim(eyemovements, dur ~ x + y | trial,
+                          512, 384, 60, 1/30)
 
 # Using cmdscale for fitting a map:
 map <- cmdscale(dissimilarities)
 
 # Getting trial infos:
-trial_infos <- constant.vars(eyemovements, trial_id)
+trial_infos <- constant.vars(eyemovements, trial)
 colors <- c("red", "blue", "green", "black")
 plot(map, col=colors[trial_infos$relation])
 }
