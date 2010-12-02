@@ -10,7 +10,7 @@ Calculates the pair-wise dissimilarities of scanpaths using the Scasim measure.
 
 \usage{
 scasim(data, formula, center_x, center_y, viewing_distance, unit_size, modulator
-= 0.83, data2=NULL, formula2=formula)
+= 0.83, data2=NULL, formula2=formula, normalize="fixations")
 }
 
 \arguments{
@@ -55,6 +55,20 @@ scasim(data, formula, center_x, center_y, viewing_distance, unit_size, modulator
   \item{formula2}{specifies the relevant columns in \code{data2} in case they
   are named differently in \code{data2} than in \code{data}.  \code{formula2}
   defaults to \code{formula}.}
+  \item{normalize}{specifies how each calculated similarity value for scanpaths
+  s and t should be normalized.  There are three possible modes:
+  
+  \describe{
+	\item{\code{fixations}}{normalize by dividing by the total number of
+	fixations in s and t,}
+	\item{\code{durations}}{divide by the total duration of s and t,}
+	\item{\code{FALSE}}{don't normalize at all.}}
+
+  The choice of normalization mode can have a strong effect when fitting maps
+  of scanpaths using \code{\link{isoMDS}} or \code{\link{cmdscale}}.  Not
+  normalizing at all can yield maps that are difficult to interpret when
+  scanpaths differ markedly in their duration or number of fixations.
+  }
 }
 
 \details{When using \code{scasim}, the dissimilarity of two scanpaths

@@ -40,6 +40,25 @@ constant.vars <- function (data, groups)
   return(constant.vars)
 }
 
+# Here's a shorter implementation.  However, it is slightly slower.  Why?  Can
+# it be fixed?
+#
+# constant_vars <- function(data, groups) {
+# 
+#   x <- melt(data, id.vars="trial")
+#   all.equal <- function(x) if (length(x)>0) all(x==x[[1]]) else TRUE
+#   x <- cast(x, trial~..., fun.aggregate=all.equal)
+#   t <- sapply(x, all)
+#   t <- t & !is.na(t)
+#   t[1] <- TRUE
+#   constant.cols <- names(t)[t]
+#   d <- data[constant.cols]
+#   d <- d[!duplicated(d$trial),]
+# 
+# }
+
+
+
 # Projects from plane coordinates to lat-lon on an sphere representing the
 # visual field (inverse gnomonic projection).
 # See http://mathworld.wolfram.com/GnomonicProjection.html.
@@ -78,11 +97,12 @@ visual.field <- function(data, center_x, center_y, viewing_distance,
 #scasim(eyemovements, d~x+y|trial, 512, 384, 60, 1/20)
 
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
-                   unit_size, modulator=0.83, data2=NULL, formula2=formula)
+                   unit_size, modulator=0.83, data2=NULL, formula2=formula,
+				           normalize="fixations")
 {
   data <- prepare.data(data, formula)
 
-  cscasim.wrapper2 <- function(s, t) cscasim.wrapper(s, t, modulator)
+  cscasim.wrapper2 <- function(s, t) cscasim.wrapper(s, t, modulator, normalize)
 
   if (length(data) == 4)          # Coordinates were given:
     data <- visual.field(data, center_x, center_y, viewing_distance, unit_size)
@@ -146,8 +166,8 @@ distances <- function(t, fun, t2=NULL) {
       s1 <- t[[i]]
       for (j in i:length(t)) {
         s2 <- t[[j]]
-        if (nrow(s1)<2 || nrow(s2)<2) {
-          print("malformed trial")
+        if (nrow(s1)<1 || nrow(s2)<1) {
+          warning("malformed trial")
           m[j,i] <- m[i,j] <- NA
         } else if (i==j) {
           m[j,i] <- m[i,j] <- 0
@@ -170,8 +190,8 @@ distances <- function(t, fun, t2=NULL) {
       s1 <- t[[i]]
       for (j in 1:length(t2)) {
         s2 <- t2[[j]]
-        if (nrow(s1)<2 || nrow(s2)<2) {
-          print("malformed trial")
+        if (nrow(s1)<1 || nrow(s2)<1) {
+          warning("malformed trial")
           m[i,j] <- NA
         } else {
           m[i,j] <- fun(s1, s2)
@@ -187,7 +207,7 @@ distances <- function(t, fun, t2=NULL) {
 
 # Wrapper for the implementation in C:
 # s and t are data frames holding one trial each.
-cscasim.wrapper <- function(s, t, modulator=0.83)
+cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
 {
   if ("roi" %in% colnames(s)) {
     s$lon <- s$roi
@@ -207,7 +227,12 @@ cscasim.wrapper <- function(s, t, modulator=0.83)
      as.double(log(t$d)),
      modulator,
      result = double(1))$result
-  result / (nrow(s) + nrow(t))
+
+  if (normalize=="fixations")
+    result <- result / (nrow(s) + nrow(t))
+  else if(normalize=="durations")
+    result <- result / (sum(s$d) + sum(t$d))
+  return(result)
 }
 
 
@@ -252,8 +277,7 @@ cscasim.wrapper <- function(s, t, modulator=0.83)
 is.homogeneous <- function(l) {
   if (length(l) <= 1)
     return(TRUE)
-  e <- l[[1]]
-  if (any(e != l[[2]]))
+  if (any(l[[1]] != l[[2]]))
     return(FALSE)
   return(is.homogeneous(l[-1]))
 }
@@ -308,9 +332,13 @@ panel.scanpath <- function(x, y, groups=NULL, subscripts=NULL, ...) {
     group <- as.integer(groups[subscripts][1])
     colors <- trellis.par.get("superpose.line")$col
     col <- colors[[((group-1)%%length(colors))+1]]
+    # This is for marking fixations but there's no suitable pch:
+    #panel.points(x, y, pch=3, col=col, cex=1)
     panel.lines(x, y, col=col, ...)
-  } else
+  } else {
+    #panel.points(x, y, pch=3, cex=1)
     panel.lines(x, y, ...)
+  }
 }
 
 plot.scanpaths.2d <- function(data, groups=NULL, panel=panel.scanpath,
@@ -328,9 +356,9 @@ plot.scanpaths.1d <- function(data, groups=NULL, panel=panel.scanpath,
 
   # Create timeline y-axis from fixation durations:
 
-  l <- levels(data$trial)
+  #l <- levels(data$trial)
   trial <- as.factor(zip(data$trial, data$trial))
-  levels(trial) <- l
+  #levels(trial) <- l
 
   if (!is.null(groups)) 
     groups <- zip(groups, groups)
@@ -348,8 +376,15 @@ plot.scanpaths.1d <- function(data, groups=NULL, panel=panel.scanpath,
 
   if (is.null(ylim))
     ylim <- c(min(d), max(d))
-    
+
   xyplot(d~x|trial, data.frame(x=x, d=d, trial=trial),
          panel=panel, ylim=ylim, groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
 }
 
+# Select mean scanpath (in a cluster):
+which.mean <- function(d, select=NULL) {
+  if (!is.null(select))
+    d <- subset(d, rownames(d) %in% select, select=select)
+  d <- rowSums(d)
+  names(d)[which.min(d)]
+}
