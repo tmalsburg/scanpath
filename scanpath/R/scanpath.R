@@ -31,7 +31,7 @@ constant.vars <- function (data, groups)
     all(tapply(col, index, function(x) length(unique(x))==1))
   })
 
-  d[constant.cols]
+  d[!duplicated(index),constant.cols]
   
 }
 
@@ -51,7 +51,6 @@ constant.vars <- function (data, groups)
 #   d <- d[!duplicated(d$trial),]
 # 
 # }
-
 # Projects from plane coordinates to lat-lon on an sphere representing the
 # visual field (inverse gnomonic projection).
 # See http://mathworld.wolfram.com/GnomonicProjection.html.
