@@ -23,33 +23,16 @@ NULL
 constant.vars <- function (data, groups)
 {
 
-  groups <- eval(substitute(groups), data, parent.frame())
+  index <- eval(substitute(index), d, parent.frame())
 
-  # First figure out which columns do not vary
-  # within a trial:
+  stopifnot(length(index)==nrow(d))
 
-  groups <- split(data, groups, drop=TRUE)
-  all.equal <- function(x) all(x==x[[1]])
-  cols.homogenous <- function(d) sapply(d, all.equal)
-  homogeneity <- data.frame(t(sapply(groups, cols.homogenous)))
-  constant.cols <- sapply(homogeneity, all)
-  varying.cols <- colnames(data)[!constant.cols]
+  constant.cols <- sapply(d, function(col) {
+    all(tapply(col, index, function(x) length(unique(x))==1))
+  })
 
-  if (all(constant.cols)) {
-    data["#"] <- 1
-    return(data)
-  }
-
-  # Create new data frame with one record per group and only fields that have
-  # constant values within each group:
-
-  data_molten <- melt(data, measure.vars=varying.cols)
-  data_molten <- subset(data_molten, variable==varying.cols[1])
-  constant.vars <- cast(data_molten, ... ~ ., fun.aggregate=length)
-  constant.vars$variable <- NULL
-  no_fields <- length(colnames(constant.vars))
-  colnames(constant.vars)[no_fields] <- "#"
-  return(constant.vars)
+  d[constant.cols]
+  
 }
 
 # Here's a shorter implementation.  However, it is slightly slower.  Why?  Can
