@@ -1,6 +1,18 @@
+#' This package provides tools for analyzing spatio-temporal patterns
+#' in eye movements, a.k.a. scanpaths.
+#'
+#' @name scanpath
+#' @docType package
+#' @title Tools for analyzing scanpaths
+#' @author Titus von der Malsburg \email{malsburg@@posteo.de}
+#' @references
+#' von der Malsburg, T. and Vasishth, S. (2011). What is the scanpath
+#' signature of syntactic reanalysis? Journal of Memory and Language,
+#' 65(2):109-127.
+#' @keywords eye movements cluster scanpaths package
+#' @seealso \code{\link{scasim}}
 
-# Author: Titus v.d. Malsburg <malsburg@uni-potsdam.de>
-# Written in 2008 and 2009.
+NULL
 
 # Creates a data.frame with the same layout as the given data frame except: 1.)
 # For each group (as defined by groups) only the first records is contained.
@@ -57,8 +69,6 @@ constant.vars <- function (data, groups)
 # 
 # }
 
-
-
 # Projects from plane coordinates to lat-lon on an sphere representing the
 # visual field (inverse gnomonic projection).
 # See http://mathworld.wolfram.com/GnomonicProjection.html.
@@ -92,10 +102,113 @@ visual.field <- function(data, center_x, center_y, viewing_distance,
     return(data)
 }
 
-# Calculates the pair-wise similarities of scanpaths using scasim:
-
-#scasim(eyemovements, d~x+y|trial, 512, 384, 60, 1/20)
-
+#' Given a set of scanpaths, this function calculates the similarities
+#' between all pairs of scanpaths in the set.
+#'
+#' @title Calculate pair-wise similarities among a set of scanpaths
+#' @param data is a data frame containing the eye movement data.  Each
+#' line represents one fixation of the eyes.  The fixations of a trial
+#' have to be listed en bloc and in chronological order.  Required
+#' columns are: trial ID (unique in the whole data set), x- and y-
+#' coordinate of fixations, duration of fixations.  If the targets of
+#' fixations are not given as coordinates but as regions of interest
+#' (ROI), there should be a factor providing the IDs of the ROIs
+#' instead of the coordinates.  See the example data set provided with
+#' this package.
+#' @param formula tells which columns in the given data frame are
+#' relevant.  The left-hand side specifies the column that holds
+#' fixation duration The right-hand side consist of terms that specify
+#' x- and y-coordinate of the fixations (in that order) conditioned on
+#' trial IDs.  In case fixation targets are not given as coordinates
+#' but as ROIs, the right-hand side specifies the column indicating
+#' the ROI conditioned on trial IDs.  In the latter case it is not
+#' necessary to specify the parameters \code{center_x},
+#' \code{center_y}, \code{viewing_distance} and \code{unit_size}
+#' because spatial relations among fixation targets are not accounted
+#' for.  See examples below.
+#' @param center_x, center_y is the point in the coordinate system of
+#' the data that is targeted when the eye looks straight ahead
+#' (usually the center of the screen).  Only relevant for
+#' \code{scasim}.
+#' @param viewing_distance is the distance of the eyes to the
+#' screen.  Only relevant for \code{scasim}.
+#' @param unit_size is ratio of one unit of the coordinate system and
+#' the unit in which the viewing distance was given.  So, one unit in
+#' the coordinate system is \code{unit_size * unit of
+#' distance}.  Example: If the coordinates are pixels on a screen with
+#' 60 dpi and the unit of the distance is inches, \code{unit_size} has
+#' to be set to 1/60.  Only relevant for \code{scasim}.
+#' @param modulator specifies how spatial distances between fixations
+#' are assessed.  When set to 0, any spatial divergence of two
+#' compared scanpaths is penalized independently of its degree.  When
+#' set to 1, the scanpaths are compared only with respect to their
+#' temporal patterns.  The default value approximates the sensitivity
+#' to spatial distance found in the human visual system.  Only
+#' relevant for \code{scasim}.
+#' @param data2 optionally provides a second set of scanpaths.  In
+#' this case \code{scasim} computes the distances from each scanpath
+#' in the first set to each scanpath in the second set.  The resulting
+#' matrix of distances is therefore not necessarily square.
+#' @param formula2 specifies the relevant columns in \code{data2} in
+#' case they are named differently in \code{data2} than in
+#' \code{data}.  \code{formula2} defaults to \code{formula}.
+#' @param normalize specifies how each calculated similarity value for
+#' scanpaths s and t should be normalized.  There are three possible
+#' modes:
+#' 
+#' \describe{
+#'   \item{\code{fixations}}{normalize by dividing by the total number
+#'   of fixations in s and t,}
+#'   \item{\code{durations}}{divide by the total duration of s and t,}
+#'   \item{\code{FALSE}}{don't normalize at all.}
+#' }
+#' 
+#' The choice of normalization mode can have a strong effect when
+#' fitting maps of scanpaths using \code{\link{isoMDS}} or
+#' \code{\link{cmdscale}}.  Not normalizing at all can yield maps that
+#' are difficult to interpret when scanpaths differ markedly in their
+#' duration or number of fixations.
+#' @details When using \code{scasim}, the dissimilarity of two
+#' scanpaths is assessed based on the distances of their fixation
+#' targets.  If the distances are really small, the dissimilarity will
+#' mostly be a function of just the differences of the fixation
+#' durations.  The evaluation of distance accounts for the particular
+#' way the human visual system magnifies the center of the visual
+#' field and the drop in acuity at its periphery.
+#' @return A matrix containing the pair-wise dissimilarities.  Columns
+#' and rows correspond to trials.  Their order is the same as the
+#' order of trials in \code{data}.
+#' @keywords eye movements scanpaths cluster
+#' @references
+#' von der Malsburg, T. and Vasishth, S. (2011). What is the scanpath
+#' signature of syntactic reanalysis? Journal of Memory and Language,
+#' 65(2):109-127.
+#'
+#' von der Malsburg, T., Vasishth, S., and Kliegl,
+#' R. (2012). Scanpaths in reading are informative about sentence
+#' processing. In Michael Carl, P. B. and Choudhary, K. K., editors,
+#' Proceedings of the First Workshop on Eye-tracking and Natural
+#' Language Processing, pages 37-53, Mumbai, India. The COLING 2012
+#' organizing committee.
+#' @author Titus von der Malsburg \email{malsburg@@posteo.de}
+#' @seealso \code{\link{MASS::isoMDS}} can be applied to the output of
+#' \code{scasim} in order to fitting maps of scanpaths.
+#' @export
+#' @examples
+#' data(eyemovements)
+#' 
+#' # Calculating dissimilarities: when looking straight ahead the gaze
+#' # targets the point with the coordinates (512,384), viewing
+#' # distance (eye to screen) is 60 cm, 1 unit in the data (pixel) is
+#' # 1/30 cm.
+#'
+#' dissimilarities <- scasim(eyemovements, dur ~ x + y | trial,
+#'                           512, 384, 60, 1/30)
+#' 
+#' # Using cmdscale for fitting a map:
+#'
+#' map <- isoMDS(dissimilarities)
+#' plot(map)
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
                    unit_size, modulator=0.83, data2=NULL, formula2=formula,
 				           normalize="fixations")
