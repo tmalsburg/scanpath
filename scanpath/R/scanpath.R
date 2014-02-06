@@ -65,22 +65,13 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' line represents one fixation of the eyes.  The fixations of a trial
 #' have to be listed en bloc and in chronological order.  Required
 #' columns are: trial ID (unique in the whole data set), x- and y-
-#' coordinate of fixations, duration of fixations.  If the targets of
-#' fixations are not given as coordinates but as regions of interest
-#' (ROI), there should be a factor providing the IDs of the ROIs
-#' instead of the coordinates.  See the example data set provided with
-#' this package.
-#' @param formula tells which columns in the given data frame are
-#' relevant.  The left-hand side specifies the column that holds
-#' fixation duration The right-hand side consist of terms that specify
-#' x- and y-coordinate of the fixations (in that order) conditioned on
-#' trial IDs.  In case fixation targets are not given as coordinates
-#' but as ROIs, the right-hand side specifies the column indicating
-#' the ROI conditioned on trial IDs.  In the latter case it is not
-#' necessary to specify the parameters \code{center_x},
-#' \code{center_y}, \code{viewing_distance} and \code{unit_size}
-#' because spatial relations among fixation targets are not accounted
-#' for.  See examples below.
+#' coordinate of fixations, and the fixation durations.  See the
+#' example data set provided with this package.
+#' @param formula specifies which columns in the given data frame are
+#' relevant.  The left-hand side specifies the column that contains
+#' the fixation duration The right-hand side consist of terms that
+#' specify x- and y-coordinate of the fixations (in that order)
+#' conditioned on trial IDs.  See examples below.
 #' @param center_x, center_y is the point in the coordinate system of
 #' the data that is targeted when the eye looks straight ahead
 #' (usually the center of the screen).  Only relevant for
@@ -209,14 +200,12 @@ set.scasim <- function(data, formula, sets, ...) {
 
 # Arranges the data in a format suitable for later processing.  (This way, we
 # don't have to carry around the formula.)
-prepare.data <- function(data, formula) {
+prepare.data <- function(data, formula)
+{
   terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
-  # TODO: stopifnot
+  stopifnot(length(terms==4))
   df <- data[terms]
-  if (length(terms) == 4)
-    colnames(df) <- c("d", "x", "y", "trial")
-  else if (length(terms) == 3)
-    colnames(df) <- c("d", "roi", "trial")
+  colnames(df) <- c("d", "x", "y", "trial")
   df
 }
 
@@ -280,13 +269,6 @@ distances <- function(t, fun, t2=NULL) {
 # s and t are data frames holding one trial each.
 cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
 {
-  if ("roi" %in% colnames(s)) {
-    s$lon <- s$roi
-    t$lon <- t$roi
-    s$lat <- double(length(s$lon))
-    t$lat <- double(length(t$lon))
-    modulator <- 0
-  }
   result <- .C(cscasim,
      as.integer(length(s$lon)),
      as.double(s$lon),
@@ -300,10 +282,13 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
      result = double(1))$result
 
   if (normalize=="fixations")
-    result <- result / (nrow(s) + nrow(t))
-  else if(normalize=="durations")
-    result <- result / (sum(s$d) + sum(t$d))
-  return(result)
+    results <- result / (nrow(s) + nrow(t))
+  else if (normalize=="durations")
+    results <- result / (sum(s$d) + sum(t$d))
+  else if (normalize)
+    stop("Unrecognized normalization parameter: ", normalize)
+  
+  result
 }
 
 # Select mean scanpath (in a cluster):
