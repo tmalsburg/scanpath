@@ -35,22 +35,6 @@ constant.vars <- function (data, groups)
   
 }
 
-# Here's a shorter implementation.  However, it is slightly slower.  Why?  Can
-# it be fixed?
-#
-# constant_vars <- function(data, groups) {
-# 
-#   x <- melt(data, id.vars="trial")
-#   all.equal <- function(x) if (length(x)>0) all(x==x[[1]]) else TRUE
-#   x <- cast(x, trial~..., fun.aggregate=all.equal)
-#   t <- sapply(x, all)
-#   t <- t & !is.na(t)
-#   t[1] <- TRUE
-#   constant.cols <- names(t)[t]
-#   d <- data[constant.cols]
-#   d <- d[!duplicated(d$trial),]
-# 
-# }
 # Projects from plane coordinates to lat-lon on an sphere representing the
 # visual field (inverse gnomonic projection).
 # See http://mathworld.wolfram.com/GnomonicProjection.html.
@@ -71,17 +55,6 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
   lat <- asin(y * sin_c / rho) * 180/pi
   lon <- atan2(x * sin_c, rho * cos(c)) * 180/pi
   data.frame(lat, lon)
-}
-
-# Convenience wrapper for inverse.gnomonic:
-visual.field <- function(data, center_x, center_y, viewing_distance,
-                          unit_size)
-{
-    latlon <- inverse.gnomonic(data$x, data$y, center_x, center_y,
-                               viewing_distance, unit_size)
-    data$lat <- latlon$lat
-    data$lon <- latlon$lon
-    return(data)
 }
 
 #' Given a set of scanpaths, this function calculates the similarities
@@ -200,15 +173,18 @@ scasim <- function(data, formula, center_x, center_y, viewing_distance,
   cscasim.wrapper2 <- function(s, t) cscasim.wrapper(s, t, modulator, normalize)
 
   if (length(data) == 4)          # Coordinates were given:
-    data <- visual.field(data, center_x, center_y, viewing_distance, unit_size)
+    data <- cbind(data, inverse.gnomonic(data$x, data$y, center_x,
+    					 center_y, viewing_distance, unit_size))
 
   if (is.null(data2))
     distances(data, cscasim.wrapper2)
   else {
     data2 <- prepare.data(data2, formula2)
     if (length(data2) == 4)
-      data2 <- visual.field(data2, center_x, center_y, viewing_distance,
-                            unit_size)
+      data2 <- cbind(data, inverse.gnomonic(data2$x, data2$y, center_x,
+                                            center_y, viewing_distance,
+                                            unit_size))
+    
     distances(data, cscasim.wrapper2, t2=data2)
   }
 }
