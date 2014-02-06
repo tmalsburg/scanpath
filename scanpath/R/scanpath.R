@@ -310,26 +310,6 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
 #  Plotting:
 #
 
-is.homogeneous <- function(l) {
-  if (length(l) <= 1)
-    return(TRUE)
-  if (any(l[[1]] != l[[2]]))
-    return(FALSE)
-  return(is.homogeneous(l[-1]))
-}
-
-zip <- function(...) {
-  stopifnot(is.homogeneous(lapply(list(...), length)))
-  x <- as.vector(rbind(...))
-  stopifnot(is.homogeneous(lapply(list(...), class)))
-  if (all(unlist(lapply(list(...), is.factor)))) {
-    stopifnot(is.homogeneous(lapply(list(...), levels)))
-    l <- levels(list(...)[[1]])
-    x <- factor(x, levels=1:length(l), labels=l)
-  }
-  x
-}
-
 plot.scanpaths <- function(formula, data, groups=NULL, panel=panel.scanpath,
                            auto.key=if(!is.null(groups)) list(columns = 2, lines=TRUE),
                            ...)
@@ -393,13 +373,13 @@ plot.scanpaths.1d <- function(data, groups=NULL, panel=panel.scanpath,
   # Create timeline y-axis from fixation durations:
 
   #l <- levels(data$trial)
-  trial <- as.factor(zip(data$trial, data$trial))
+  trial <- as.factor(rep(data$trial, each=2))
   #levels(trial) <- l
 
   if (!is.null(groups)) 
-    groups <- zip(groups, groups)
-  x <- zip(data$x, data$x)
-  d <- zip(data$d, data$d)
+    groups <- rep(groups, each=2)
+  x <- rep(data$x, each=2)
+  d <- rep(data$d, each=2)
   s <- c(TRUE, diff(as.integer(as.factor(trial))) != 0)
   d <- ifelse(s, 0, d)
   idxs <- setdiff(2:nrow(data)*2, which(s)+1)
