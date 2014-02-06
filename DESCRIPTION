@@ -6,9 +6,12 @@ Date: 2014-02-04
 Author: Titus von der Malsburg
 Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 Description: Provides a similarity measure for scanpaths that is sensitive to
-	spatial and temporal patterns.  This measure can be used, for example, to
-	perform cluster analyses of sets of scanpaths or to evaluate models of
-	oculo-motor control.
+    spatial and temporal patterns.  This measure can be used, for example, to
+    perform cluster analyses of sets of scanpaths or to evaluate models of
+    oculo-motor control.
 License: GPL-2
 LazyLoad: yes
-Depends: reshape, lattice, gdata
+Depends:
+    reshape,
+    lattice,
+    gdata
