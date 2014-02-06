@@ -1,2 +1,1 @@
-useDynLib(scanpath, cscasim)
-export(scasim, inverse.gnomonic, constant.vars, plot.scanpaths, panel.scanpath, which.mean, replace.syms, find.fixation, match.scanpath)
+export(scasim)
