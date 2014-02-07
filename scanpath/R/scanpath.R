@@ -77,9 +77,12 @@ constant.vars <- function (data, groups)
 #' x <- eyemovements$x
 #' y <- eyemovements$y
 #'
-#' latlon <- inverse.gnomonic(x, y, 512, 384, 60, 1/30)
+#' latlon <- inverse.gnomonic(x, y, 268, 382, 8, 1/30)
 #' 
-#' with(latlon, plot(lat, lon))
+#' # Before projection:
+#' plot(x, y)
+#' # After:
+#' with(latlon, plot(lon, lat))
 inverse.gnomonic <- function(x, y, center_x, center_y, distance,
                              unit_size = 1)
 {
@@ -197,7 +200,8 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' # Using cmdscale for fitting a map:
 #'
 #' map <- cmdscale(dissimilarities)
-#' plot(map)
+#' plot(map, cex=4)
+#' text(map, labels(rownames(map)))
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
                    unit_size, modulator=0.83, data2=NULL, formula2=formula,
                    normalize="fixations")
@@ -221,23 +225,37 @@ scasim <- function(data, formula, center_x, center_y, viewing_distance,
   }
 }
 
-# Calculates the mean similarities of sub-sets of scanpaths as given by a
-# grouping variable.  For instance it groups is the subject id we get a matrix
-# of the similarities of subjects.
-set.scasim <- function(data, formula, sets, ...) {
-  sets <- factor(sets, ordered=TRUE)
-  # This nifty power move comes from Chuck C. Berry:
-  mat <- model.matrix(~0+sets)
-  tab <- table(sets)
-  d <- scasim(data, formula, ...)
-  means <- (t(mat) %*% d %*% mat) / outer( tab, tab )
-
-  id <- diag(length(levels(sets)))
-  means <- ifelse(id, 0, means)
-  colnames(means) <- rownames(means) <- levels(sets)
-  return(means)
+#' Calculates the mean similarities among sub-sets of scanpaths given
+#' by a grouping variable.  For instance, when the groups are the
+#' participants of the experiment, we get a matrix of the average
+#' similarities between the scanpaths of the subjects.
+#'
+#' @title Mean similarities among sets of scanpaths
+#' @param d a symmetric matrix of similarities as calculated by the
+#' function \code{\link{scasim}} or a dist object (see
+#' \code{\link{dist}}).
+#' @param groups a vector that assigns each column to a group.
+#' @return a matrix containing the pair-wise average similarities for
+#' all groups.
+#' @seealso \code{\link{scasim}}, \code{\link{dist}}
+#' @export
+#' @examples
+#' data(eyemovements)
+#' d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+#' s <- constant.vars(eyemovements, trial)$subject
+#' avg.group.dist(d, s)
+avg.group.dist <- function(d, groups) {
+  if (class(d)=="dist")
+    d <- as.matrix(d)
+  # This nifty trick was recommended to me by Chuck C. Berry:
+  groups <- factor(groups, ordered=TRUE)
+  mat <- model.matrix(~0+groups)
+  tab <- table(groups)
+  means <- (t(mat) %*% d %*% mat) / outer(tab, tab)
+  
+  colnames(means) <- rownames(means) <- levels(groups)
+  means
 }
-
 
 # Arranges the data in a format suitable for later processing.  (This way, we
 # don't have to carry around the formula.)
@@ -286,7 +304,6 @@ distances <- function(t, fun, t2=NULL) {
   }
   return(m)
 }
-
 
 # Wrapper for the implementation in C:
 # s and t are data frames holding one trial each.
