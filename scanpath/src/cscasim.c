@@ -3,18 +3,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-void print_matrix(double** d, int n, int m)
-{
-    int i,j;
-
-    for (i=0; i < n; i++) {
-        for (j=0; j < m; j++) {
-            printf("%.1f ", d[i][j]);
-        }
-        printf("\n");
-    }
-}
-
 /* NOTE: Is inlining equivalent to making this a macro?  Check out
  * always_inline (non-standard GCC feature).  According to the GCC manual it's
  * almost as fast as a macro (whatever that means). */
