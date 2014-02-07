@@ -361,3 +361,38 @@ which.centroid <- function(d, select=NULL) {
   d <- rowMeans(d)
   names(d)[which.min(d)]
 }
+
+#' Fixational eye movements during reading a sentence
+#'
+#' @name eyemovements
+#' @docType data
+#' @usage data(eyemovements)
+#' @format This data set consists of nine trials.  One of these trials
+#' was recorded in an experiment where the participants had to read
+#' single sentences on a screen, one at a time.  The other eight
+#' trials are modifications of the recorded trial.  There are three
+#' imaginary participants and for each participant there are three
+#' trials: in the first trial the participant read the sentence
+#' straight from left to right. In the second trial there was a short
+#' regression from the last word to the beginning of the sentence.  In
+#' the third trial the regression was longer and the eyes check
+#' several intermediate words before returning to the end of the
+#' sentence.  In order to simulate different reading speeds, the
+#' recorded fixation durations were modified by adding additional time
+#' that was sampled from a normal distribution with different means
+#' for each subject.
+#'
+#' In the data frame each row represents one fixation of the
+#' eyes.  The data frame has the following columns:
+#' \describe{
+#' \item{subject}{the id of the subject}
+#' \item{trial\_id}{the id of the trial (unique only within subjects)}
+#' \item{dur}{the duration of a fixation in milliseconds}
+#' \item{x}{the x coordinate of a fixation in pixels}
+#' \item{y}{the y coordinate of a fixation in pixels}
+#' \item{trial}{the id of the trial (unique in the whole data set)}
+#' \item{word}{the word that was targeted by the fixation}
+#' }
+#' @keywords datasets
+
+NULL
