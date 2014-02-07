@@ -11,33 +11,75 @@
 #' 65(2):109-127.
 #' @keywords eye movements cluster scanpaths package
 #' @seealso \code{\link{scasim}}
+#' @useDynLib scanpath cscasim
 
 NULL
 
-# Creates a data.frame with the same layout as the given data frame except: 1.)
-# For each group (as defined by groups) only the first records is contained.
-# 2.) Columns that vary within groups are dropped.  constant.vars can be used
-# to extract trial infos from a data frame containing fixations or subject
-# infos from a data frame containing trial infos.
-
+#' Given a data frame and a grouping variable, this function returns a
+#' new data frame that contains only the variables that are constant
+#' within the levels of the grouping variable.  The results data frame
+#' contains only one line for each level of the grouping
+#' variable.  This function can be used to extract trial-based
+#' information from a data frame containing experimental data with
+#' multiple measurements per trial.
+#'
+#' @title Extract variables that are constant within the levels of a
+#' grouping variable.
+#' @param data a data frame.
+#' @param groups a grouping variable.  Either a vector with the same length as the data frame or simply a column in \code{data}.
+#' @return A data frame with one entry for each level of the grouping variable.
+#' @export 
+#' @examples
+#' data(eyemovements)
+#' head(eyemovements)
+#' constant.vars(eyemovements, trial)
 constant.vars <- function (data, groups)
 {
 
-  index <- eval(substitute(index), d, parent.frame())
+  groups <- eval(substitute(groups), data, parent.frame())
 
-  stopifnot(length(index)==nrow(d))
+  stopifnot(length(groups)==nrow(data))
 
-  constant.cols <- sapply(d, function(col) {
-    all(tapply(col, index, function(x) length(unique(x))==1))
+  constant.cols <- sapply(data, function(col) {
+    all(tapply(col, groups, function(x) length(unique(x))==1))
   })
 
-  d[!duplicated(index),constant.cols]
+  data[!duplicated(groups),constant.cols]
   
 }
 
-# Projects from plane coordinates to lat-lon on an sphere representing the
-# visual field (inverse gnomonic projection).
-# See http://mathworld.wolfram.com/GnomonicProjection.html.
+#' Projects from points given in plane coordinates to lat-lon, i.e.,
+#' to the surface of a sphere (inverse gnomonic projection).  This can
+#' be used to project screen coordinates to coordinates of the visual
+#' field of somebody sitting in front of the screen.
+#'
+#' @title Project points from a plane to a sphere.
+#' @param x the x-coordinates of the points.
+#' @param y the y-coordinates of the points.
+#' @param center_x is the x-coodrinate of the point that is targeted
+#' when the eye looks straight ahead (usually the center of the
+#' screen).
+#' @param center_y is the y-coodrinate of the point that is targeted
+#' when the eye looks straight ahead (usually the center of the
+#' screen).
+#' @param distance is the distance of the plane to the center of the
+#' sphere.
+#' @param unit_size is ratio of one unit of the plane coordinate
+#' system and the unit in which the viewing distance was given.  So,
+#' one unit in the coordinate system is \code{unit_size * unit of
+#' distance}.
+#' @return A data frame containing lat and lon coordinates.
+#' @references See
+#' http://mathworld.wolfram.com/GnomonicProjection.html.
+#' @export
+#' @examples
+#' data(eyemovements)
+#' x <- eyemovements$x
+#' y <- eyemovements$y
+#'
+#' latlon <- inverse.gnomonic(x, y, 512, 384, 60, 1/30)
+#' 
+#' with(latlon, plot(lat, lon))
 inverse.gnomonic <- function(x, y, center_x, center_y, distance,
                              unit_size = 1)
 {
@@ -72,25 +114,26 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' the fixation duration The right-hand side consist of terms that
 #' specify x- and y-coordinate of the fixations (in that order)
 #' conditioned on trial IDs.  See examples below.
-#' @param center_x, center_y is the point in the coordinate system of
-#' the data that is targeted when the eye looks straight ahead
-#' (usually the center of the screen).  Only relevant for
-#' \code{scasim}.
+#' @param center_x is the x-coodrinate of the point that is targeted
+#' when the eye looks straight ahead (usually the center of the
+#' screen).
+#' @param center_y is the y-coodrinate of the point that is targeted
+#' when the eye looks straight ahead (usually the center of the
+#' screen).
 #' @param viewing_distance is the distance of the eyes to the
-#' screen.  Only relevant for \code{scasim}.
+#' screen.
 #' @param unit_size is ratio of one unit of the coordinate system and
 #' the unit in which the viewing distance was given.  So, one unit in
 #' the coordinate system is \code{unit_size * unit of
 #' distance}.  Example: If the coordinates are pixels on a screen with
 #' 60 dpi and the unit of the distance is inches, \code{unit_size} has
-#' to be set to 1/60.  Only relevant for \code{scasim}.
+#' to be set to 1/60.
 #' @param modulator specifies how spatial distances between fixations
 #' are assessed.  When set to 0, any spatial divergence of two
 #' compared scanpaths is penalized independently of its degree.  When
 #' set to 1, the scanpaths are compared only with respect to their
 #' temporal patterns.  The default value approximates the sensitivity
-#' to spatial distance found in the human visual system.  Only
-#' relevant for \code{scasim}.
+#' to spatial distance found in the human visual system.
 #' @param data2 optionally provides a second set of scanpaths.  In
 #' this case \code{scasim} computes the distances from each scanpath
 #' in the first set to each scanpath in the second set.  The resulting
@@ -110,7 +153,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' }
 #' 
 #' The choice of normalization mode can have a strong effect when
-#' fitting maps of scanpaths using \code{\link{isoMDS}} or
+#' fitting maps of scanpaths using \code{\link[MASS]{isoMDS}} or
 #' \code{\link{cmdscale}}.  Not normalizing at all can yield maps that
 #' are difficult to interpret when scanpaths differ markedly in their
 #' duration or number of fixations.
@@ -137,7 +180,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' Language Processing, pages 37-53, Mumbai, India. The COLING 2012
 #' organizing committee.
 #' @author Titus von der Malsburg \email{malsburg@@posteo.de}
-#' @seealso \code{\link{MASS::isoMDS}} can be applied to the output of
+#' @seealso \code{\link[MASS]{isoMDS}} can be applied to the output of
 #' \code{scasim} in order to fitting maps of scanpaths.
 #' @export
 #' @examples
@@ -153,7 +196,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' 
 #' # Using cmdscale for fitting a map:
 #'
-#' map <- isoMDS(dissimilarities)
+#' map <- cmdscale(dissimilarities)
 #' plot(map)
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
                    unit_size, modulator=0.83, data2=NULL, formula2=formula,
@@ -220,20 +263,11 @@ distances <- function(t, fun, t2=NULL) {
     t$trial <- NULL                 # Is supposed to make split faster.
     t <- split.data.frame(t, tid, drop=TRUE)
     m <- matrix(0, nrow=length(t), ncol=length(t))
-    for (i in 1:length(t)) {
-      s1 <- t[[i]]
-      for (j in i:length(t)) {
-        s2 <- t[[j]]
-        if (nrow(s1)<1 || nrow(s2)<1) {
-          warning("malformed trial")
-          m[j,i] <- m[i,j] <- NA
-        } else if (i==j) {
-          m[j,i] <- m[i,j] <- 0
-        } else {
-          m[j,i] <- m[i,j] <- fun(s1, s2)
-        }
-      }
-    }
+    if (length(t)==1)
+      return(m)
+    for (i in 1:(length(t)-1))
+      for (j in (i+1):length(t))
+        m[j,i] <- m[i,j] <- fun(t[[i]], t[[j]])
     colnames(m) <- rownames(m) <- unique(tid)
   # Case where two sets of trials are processed:
   } else {
@@ -244,18 +278,9 @@ distances <- function(t, fun, t2=NULL) {
     t <- split.data.frame(t, tid, drop=TRUE)
     t2 <- split.data.frame(t2, t2id, drop=TRUE)
     m <- matrix(0, nrow=length(t), ncol=length(t2))
-    for (i in 1:length(t)) {
-      s1 <- t[[i]]
-      for (j in 1:length(t2)) {
-        s2 <- t2[[j]]
-        if (nrow(s1)<1 || nrow(s2)<1) {
-          warning("malformed trial")
-          m[i,j] <- NA
-        } else {
-          m[i,j] <- fun(s1, s2)
-        }
-      }
-    }
+    for (i in 1:length(t))
+      for (j in 1:length(t2))
+        m[i,j] <- fun(t[[i]], t[[j]])
     rownames(m) <- unique(tid)
     colnames(m) <- unique(t2id)
   }
