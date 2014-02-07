@@ -331,10 +331,29 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
   result
 }
 
-# Select mean scanpath (in a cluster):
+#' Given a matrix of similarities, this function identifies the item
+#' that has the smallest average distance to the other items.
+#'
+#' @title Find item with minimal average distance to other items
+#' @param d a symmetric matrix of similarities or a \code{\link{dist}}
+#' object.
+#' @param select a vector of names of items that should be included in
+#' the analysis.  These names should correspond to the row and column
+#' names of \code{d}.  Items not listed are ignored completely.  The
+#' default is to take all items into account.
+#' @return the name of the item that has the minimal average distance
+#' to the other items.
+#' @export
+#' @examples
+#' data(eyemovements)
+#' d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+#' which.mean(d)
+#' which.mean(d, c("1:1", "1:2", "1:3"))
 which.mean <- function(d, select=NULL) {
-  if (!is.null(select))
-    d <- subset(d, rownames(d) %in% select, select=select)
-  d <- rowSums(d)
+  if (!is.null(select)) {
+    t <- rownames(d) %in% select
+    d <- d[t,t]
+  }
+  d <- rowMeans(d)
   names(d)[which.min(d)]
 }
