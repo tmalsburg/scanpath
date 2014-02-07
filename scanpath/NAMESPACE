@@ -1,5 +1,7 @@
 export(avg.group.dist)
 export(constant.vars)
 export(inverse.gnomonic)
+export(replace.all)
 export(scasim)
+export(which.centroid)
 useDynLib(scanpath,cscasim)

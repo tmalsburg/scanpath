@@ -2,23 +2,36 @@ pcre <- function(pattern, text, subpattern)
 {
 
   stopifnot(as.integer(subpattern)==subpattern)
-
-	.Call("_gregexpr",pattern,text,subpattern)
+  .Call("_gregexpr",pattern,text,subpattern)
 
 }
 
-#
-# A function for replacing word IDs.
-#
-# Most of the time, this will be used to replace numerical word IDs by
-# alphabetical IDs.  This is useful for sentences that have more than 10 words.
-#
-
-# d$wn <- replace.syms(d$wn, unique(d$wn), LETTERS[unique(d$wn)])
-
-#library(gdata)
-
-replace.syms <- function(x, r, res.type=as.character, na.value=NA) {
+#' Given a vector of values \code{x} and a set of replacement values
+#' \code{r} (one for each unique value in \code{x}), this function
+#' replaces each value in \code{x} by the corresponding new value in
+#' \code{r}.
+#'
+#' @title Replace all values in a vector by other values
+#' @param x a vector.
+#' @param r a vector of replacement values.  One value for each
+#' element in \code{dot(unique(x))}.
+#' @param res.type a function for converting the result vector to a
+#' desired data type.
+#' @param na.value a replacement value for NAs.
+#' @return a version of \code{x} in which all original values are
+#' substituted by the replacements specified in \code{r}.
+#' @note This function can be used to replace region identifiers 
+#' @export
+#' @examples
+#' replace.all(1:10, letters[1:10])
+#' replace.all(10:1, letters[1:10])
+#'
+#' data(eyemovements)
+#' words <- eyemovements$word
+#'
+#' replace.all(words, letters[1:length(unique(words))])
+#' replace.all(words, letters[1:length(unique(words))], paste, collapse="")
+replace.all <- function(x, r, res.type=as.character, na.value=NA, ...) {
 
   stopifnot(length(unique(r))==length(r))
   stopifnot(length(unique(x[!is.na(x)]))==length(r))
@@ -26,7 +39,7 @@ replace.syms <- function(x, r, res.type=as.character, na.value=NA) {
   x <- factor(x, labels=r)
   if (!is.na(na.value))
     x <- suppressWarnings(NAToUnknown(x, na.value))
-  res.type(x)
+  res.type(x, ...)
 
 }
 
