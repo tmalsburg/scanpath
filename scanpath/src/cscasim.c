@@ -5,14 +5,14 @@
 
 void print_matrix(double** d, int n, int m)
 {
-	int i,j;
+    int i,j;
 
-	for (i=0; i < n; i++) {
-		for (j=0; j < m; j++) {
-			printf("%.1f ", d[i][j]);
-		}
-		printf("\n");
-	}
+    for (i=0; i < n; i++) {
+        for (j=0; j < m; j++) {
+            printf("%.1f ", d[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 /* NOTE: Is inlining equivalent to making this a macro?  Check out
@@ -20,51 +20,51 @@ void print_matrix(double** d, int n, int m)
  * almost as fast as a macro (whatever that means). */
 inline double fmin3(double a, double b, double c)
 {
-	double t;
-	t = (a <= b || isnan (b)) ? a : b;
-	t = (t <= c || isnan (c)) ? t : c;
-	return t;
+    double t;
+    t = (a <= b || isnan (b)) ? a : b;
+    t = (t <= c || isnan (c)) ? t : c;
+    return t;
 }
 
 double** create_matrix(int* ns, double* sd,
-					   int* nt, double* td)
+                       int* nt, double* td)
 {
 
-	double** d;
-	double accumulator;
-	int i, j;
-	int m, n;
-	n = *ns;
-	m = *nt;
+    double** d;
+    double accumulator;
+    int i, j;
+    int m, n;
+    n = *ns;
+    m = *nt;
 
-	d = malloc(sizeof(double*) * (n + 1));
-	for (i=0; i <= n; i++)
-		d[i] = malloc(sizeof(double) * (m + 1));
+    d = malloc(sizeof(double*) * (n + 1));
+    for (i=0; i <= n; i++)
+        d[i] = malloc(sizeof(double) * (m + 1));
 
-	/* initialize matrix */
+    /* initialize matrix */
 
-	d[0][0] = 0.0;
-	accumulator = 0.0;
-	for (i=0; i < n; i++) {
-		accumulator += sd[i];
-		d[i+1][0] = accumulator;
-	}
-	accumulator = 0.0;
-	for (j=0; j < m; j++) {
-		accumulator += td[j];
-		d[0][j+1] = accumulator;
-	}
+    d[0][0] = 0.0;
+    accumulator = 0.0;
+    for (i=0; i < n; i++) {
+        accumulator += sd[i];
+        d[i+1][0] = accumulator;
+    }
+    accumulator = 0.0;
+    for (j=0; j < m; j++) {
+        accumulator += td[j];
+        d[0][j+1] = accumulator;
+    }
 
-	return d;
+    return d;
 }
 
 void free_matrix(double** d, int* ns) {
 
-	int i;
+    int i;
 
-	for (i=0; i <= *ns; i++)
-		free(d[i]);
-	free(d);
+    for (i=0; i <= *ns; i++)
+        free(d[i]);
+    free(d);
 
 }
 
@@ -75,28 +75,28 @@ void free_matrix(double** d, int* ns) {
  * the fixation durations (usually in milliseconds)
  * */
 void cscasim(int* ns, double* slon, double* slat, double* sd,
-			 int* nt, double* tlon, double* tlat, double* td,
-			 double* modulator,
-			 double* result)
+             int* nt, double* tlon, double* tlat, double* td,
+             double* modulator,
+             double* result)
 {
-	double** d;
-	double angle, mixer;
+    double** d;
+    double angle, mixer;
     double sa, sb, ta, tb;
-	double cost;
-	int i, j;
-	int m, n;
-	n = *ns;
-	m = *nt;
+    double cost;
+    int i, j;
+    int m, n;
+    n = *ns;
+    m = *nt;
 
-	/* allocate memory for 2-d matrix: */
-	d = create_matrix(ns, sd, nt, td);
+    /* allocate memory for 2-d matrix: */
+    d = create_matrix(ns, sd, nt, td);
 
-	/* calculate scanpath dissimilarity: */
+    /* calculate scanpath dissimilarity: */
 
     /* loop over fixations in scanpath s: */
-	for (i=0; i < n; i++) {
+    for (i=0; i < n; i++) {
         /* loop over fixations in scanpath t: */
-		for (j=0; j < m; j++) {
+        for (j=0; j < m; j++) {
 
             /* calculating angle between fixation targets: */
             sa = slon[i] / (180/M_PI);
@@ -109,25 +109,25 @@ void cscasim(int* ns, double* slon, double* slat, double* sd,
             angle = acos(sin(sb) * sin(tb) +
                     cos(sb) * cos(tb) * cos(sa - ta)) * (180/M_PI);
 
-			/* approximation of cortical magnification: */
-			mixer = pow(*modulator, angle);
+            /* approximation of cortical magnification: */
+            mixer = pow(*modulator, angle);
 
-			/* cost for substitution: */
-			cost = fabs(td[j] - sd[i]) * mixer +
-			       (td[j] + sd[i])     * (1.0 - mixer);
+            /* cost for substitution: */
+            cost = fabs(td[j] - sd[i]) * mixer +
+                   (td[j] + sd[i])     * (1.0 - mixer);
 
-			/* select optimal edit operation: */
-			d[i+1][j+1] = fmin3(d[i][j+1] + sd[i],
-								d[i+1][j] + td[j],
-								d[i][j]   + cost);
-		}
-	}
+            /* select optimal edit operation: */
+            d[i+1][j+1] = fmin3(d[i][j+1] + sd[i],
+                                d[i+1][j] + td[j],
+                                d[i][j]   + cost);
+        }
+    }
 
-	*result = d[n][m];
+    *result = d[n][m];
 
-	/* free memory: */
+    /* free memory: */
 
-	free_matrix(d, ns);
+    free_matrix(d, ns);
 
 }
 
