@@ -10,7 +10,7 @@
 #' signature of syntactic reanalysis? Journal of Memory and Language,
 #' 65(2):109-127.
 #' @keywords eye movements cluster scanpaths package
-#' @seealso \code{\link{scasim}}
+#' @seealso \code{\link{scasim}}, \code{\link{avg.group.dist}}, \code{\link{constant.vars}}, \code{\link{which.centroid}}
 #' @useDynLib scanpath cscasim
 
 NULL
@@ -341,15 +341,19 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
 #' the analysis.  These names should correspond to the row and column
 #' names of \code{d}.  Items not listed are ignored completely.  The
 #' default is to take all items into account.
+#' @details Although the function is called which.centroid, the
+#' selected item is not necessarily the centroid in the strict
+#' sense.  However, it is the item which is closer to the centroid
+#' that any other item in the set.
 #' @return the name of the item that has the minimal average distance
 #' to the other items.
 #' @export
 #' @examples
 #' data(eyemovements)
 #' d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
-#' which.mean(d)
-#' which.mean(d, c("1:1", "1:2", "1:3"))
-which.mean <- function(d, select=NULL) {
+#' which.centroid(d)
+#' which.centroid(d, c("1:1", "1:2", "1:3"))
+which.centroid <- function(d, select=NULL) {
   if (!is.null(select)) {
     t <- rownames(d) %in% select
     d <- d[t,t]
