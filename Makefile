@@ -1,15 +1,16 @@
-build: scanpath_1.05.tar.gz
 
-documentation: R/scanpath.R
-	R -e 'library(roxygen2); roxygenize()'
+MANPAGES=scanpath/man/constant.vars.Rd scanpath/man/eyemovements.Rd scanpath/man/find.fixation.Rd scanpath/man/inverse.gnomonic.Rd scanpath/man/match.scanpaht.Rd scanpath/man/replace.syms.Rd scanpath/man/scanpath.Rd scanpath/man/scasim.Rd
+RSOURCES=scanpath/R/fixsel.R scanpath/R/plot_scanpaths.R scanpath/R/scanpath.R
+CSOURCES=scanpath/src/cscasim.c scanpath/src/fixsel.cpp scanpath/src/fixsel.hpp
 
-scanpath_1.05.tar.gz: scanpath/R/scanpath.R scanpath/R/fixsel.R scanpath/src/cscasim.c scanpath/src/fixsel.cpp scanpath/src/fixsel.hpp scanpath/DESCRIPTION scanpath/NAMESPACE scanpath/data/eyemovements.rda
+scanpath_1.05.tar.gz: $(RSOURCES) $(CSOURCES) documentation scanpath/DESCRIPTION scanpath/NAMESPACE
 	R CMD build scanpath
 
-check: scanpath_1.05.tar.gz
+documentation: $(RSOURCES)
+	cd scanpath; R -e 'library(roxygen2); roxygenize()'
 
-scanpath.Rcheck/00check.log: scanpath_1.05.tar.gz
-	R CMD check scanpath_1.05.tar.gz
+check: $(RSOURCES) $(CSOURCES) documentation scanpath/DESCRIPTION scanpath/NAMESPACE
+	R CMD check scanpath
 
-install: check
+install: check scanpath_1.05.tar.gz
 	R CMD INSTALL scanpath_1.05.tar.gz
