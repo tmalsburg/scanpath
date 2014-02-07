@@ -13,4 +13,4 @@ check: $(RSOURCES) $(CSOURCES) documentation scanpath/DESCRIPTION scanpath/NAMES
 	R CMD check scanpath
 
 install: check scanpath_1.05.tar.gz
-	R CMD INSTALL scanpath_1.05.tar.gz
+	sudo R CMD INSTALL scanpath_1.05.tar.gz
