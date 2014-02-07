@@ -1,3 +1,4 @@
+export(avg.group.dist)
 export(constant.vars)
 export(inverse.gnomonic)
 export(scasim)
