@@ -1,0 +1,5 @@
+scanpath.Rcheck
+*.o
+*.so
+scanpath_1.05.tar.gz
+scanpath/src/symbols.rds
