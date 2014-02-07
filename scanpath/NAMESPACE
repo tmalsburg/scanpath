@@ -1,5 +1,6 @@
 export(avg.group.dist)
 export(constant.vars)
+export(find.fixation)
 export(inverse.gnomonic)
 export(replace.all)
 export(scasim)
