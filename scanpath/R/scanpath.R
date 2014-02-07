@@ -157,24 +157,22 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' plot(map)
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
                    unit_size, modulator=0.83, data2=NULL, formula2=formula,
-				           normalize="fixations")
+                   normalize="fixations")
 {
   data <- prepare.data(data, formula)
 
   cscasim.wrapper2 <- function(s, t) cscasim.wrapper(s, t, modulator, normalize)
 
-  if (length(data) == 4)          # Coordinates were given:
-    data <- cbind(data, inverse.gnomonic(data$x, data$y, center_x,
-    					 center_y, viewing_distance, unit_size))
+  data <- cbind(data, inverse.gnomonic(data$x, data$y, center_x,
+                                       center_y, viewing_distance, unit_size))
 
-  if (is.null(data2))
+  if (is.null(data2)) {
     distances(data, cscasim.wrapper2)
-  else {
+  } else {
     data2 <- prepare.data(data2, formula2)
-    if (length(data2) == 4)
-      data2 <- cbind(data, inverse.gnomonic(data2$x, data2$y, center_x,
-                                            center_y, viewing_distance,
-                                            unit_size))
+    data2 <- cbind(data, inverse.gnomonic(data2$x, data2$y, center_x,
+                                          center_y, viewing_distance,
+                                          unit_size))
     
     distances(data, cscasim.wrapper2, t2=data2)
   }
@@ -203,7 +201,7 @@ set.scasim <- function(data, formula, sets, ...) {
 prepare.data <- function(data, formula)
 {
   terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
-  stopifnot(length(terms==4))
+  stopifnot(length(terms)==4)
   df <- data[terms]
   colnames(df) <- c("d", "x", "y", "trial")
   df
