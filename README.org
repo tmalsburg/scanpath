@@ -1,0 +1,38 @@
+* Scanpath
+
+An R package providing tools for analyzing scanpaths found in eyetracking data.
+
+Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for details about this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]].  The package includes a simple toy dataset and examples.
+
+** Install
+
+#+BEGIN_SRC R
+  library("devtools");
+  install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
+#+END_SRC
+
+On Linux this should just work.  On OSX you may have to install the developer tools.  I have no idea what needs to be done on Windows to make this work.  It may work, but I haven’t tried it.  Feedback welcome.
+
+** Usage example
+
+#+BEGIN_SRC R :results graphics :export both :file Screenshots/map_of_nine_scanpaths.png
+  library(scanpath)
+  data(eyemovements)
+
+  # Calculate the pair-wise similarities of the nine scanpaths in
+  # the dataset:
+
+  d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+
+  # Fit a map of "scanpath space":
+	
+  map <- cmdscale(d)
+
+  # Plot the map:
+
+  plot(map, cex=4)
+  text(map, labels=rownames(map))
+#+END_SRC
+
+#+RESULTS:
+[[file:Screenshots/map_of_nine_scanpaths.png]]
