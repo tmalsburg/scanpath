@@ -36,4 +36,4 @@ On Linux this should just work.  On OSX you may have to install the developer to
 
 #+RESULTS:
 #+ATTR_HTML: title="Map of scanpaths"
-[[https://raw.githubusercontent.com/tmalsburg/scanpath/master/map_of_nine_scanpaths.png][file:https://raw.githubusercontent.com/tmalsburg/scanpath/master/map_of_nine_scanpaths.png]]
+[[https://github.com/tmalsburg/scanpath][file:map_of_nine_scanpaths.png]]
