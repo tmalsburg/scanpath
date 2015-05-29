@@ -35,4 +35,5 @@ On Linux this should just work.  On OSX you may have to install the developer to
 #+END_SRC
 
 #+RESULTS:
+#+ATTR_HTML: title="Map of scanpaths"
 [[https://raw.githubusercontent.com/tmalsburg/scanpath/master/map_of_nine_scanpaths.png][https://raw.githubusercontent.com/tmalsburg/scanpath/master/map_of_nine_scanpaths.png]]
