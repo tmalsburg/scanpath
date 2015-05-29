@@ -15,7 +15,7 @@ On Linux this should just work.  On OSX you may have to install the developer to
 
 ** Usage example
 
-#+BEGIN_SRC R :results graphics :export both :file Screenshots/map_of_nine_scanpaths.png
+#+BEGIN_SRC R :results graphics :export both :file map_of_nine_scanpaths.png
   library(scanpath)
   data(eyemovements)
 
@@ -35,4 +35,4 @@ On Linux this should just work.  On OSX you may have to install the developer to
 #+END_SRC
 
 #+RESULTS:
-[[file:Screenshots/map_of_nine_scanpaths.png]]
+[[file:map_of_nine_scanpaths.png]]
