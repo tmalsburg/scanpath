@@ -34,6 +34,4 @@ On Linux this should just work.  On OSX you may have to install the developer to
   text(map, labels=rownames(map))
 #+END_SRC
 
-#+RESULTS:
-#+ATTR_HTML: title="Map of scanpaths"
-[[https://github.com/tmalsburg/scanpath][file:map_of_nine_scanpaths.png]]
+[[file:map_of_nine_scanpaths.png]]
