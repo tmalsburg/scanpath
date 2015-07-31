@@ -217,9 +217,9 @@ scasim <- function(data, formula, center_x, center_y, viewing_distance,
     distances(data, cscasim.wrapper2)
   } else {
     data2 <- prepare.data(data2, formula2)
-    data2 <- cbind(data, inverse.gnomonic(data2$x, data2$y, center_x,
-                                          center_y, viewing_distance,
-                                          unit_size))
+    data2 <- cbind(data2, inverse.gnomonic(data2$x, data2$y, center_x,
+                                           center_y, viewing_distance,
+                                           unit_size))
     
     distances(data, cscasim.wrapper2, t2=data2)
   }
@@ -298,7 +298,7 @@ distances <- function(t, fun, t2=NULL) {
     m <- matrix(0, nrow=length(t), ncol=length(t2))
     for (i in 1:length(t))
       for (j in 1:length(t2))
-        m[i,j] <- fun(t[[i]], t[[j]])
+        m[i,j] <- fun(t[[i]], t2[[j]])
     rownames(m) <- unique(tid)
     colnames(m) <- unique(t2id)
   }
@@ -322,12 +322,11 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
      result = double(1))$result
 
   if (normalize=="fixations")
-    results <- result / (nrow(s) + nrow(t))
+    result <- result / (nrow(s) + nrow(t))
   else if (normalize=="durations")
-    results <- result / (sum(s$d) + sum(t$d))
+    result <- result / (sum(s$d) + sum(t$d))
   else if (normalize)
     stop("Unrecognized normalization parameter: ", normalize)
-  
   result
 }
 
