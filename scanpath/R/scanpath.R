@@ -262,9 +262,12 @@ avg.group.dist <- function(d, groups) {
 prepare.data <- function(data, formula)
 {
   terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
-  stopifnot(length(terms)==4)
+  stopifnot(length(terms) %in% 3:4)
   df <- data[terms]
-  colnames(df) <- c("d", "x", "y", "trial")
+  if (length(terms)==3) 
+    colnames(df) <- c("d", "x", "trial")
+  else
+    colnames(df) <- c("d", "x", "y", "trial")
   df
 }
 
