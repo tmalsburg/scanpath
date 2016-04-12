@@ -47,7 +47,7 @@ replace.all <- function(x, r, res.type=as.character, na.value=NA, ...) {
 
   x <- factor(x, labels=r)
   if (!is.na(na.value))
-    x <- suppressWarnings(NAToUnknown(x, na.value))
+    x <- suppressWarnings(gdata::NAToUnknown(x, na.value))
   res.type(x, ...)
 
 }
@@ -119,6 +119,31 @@ find.fixation <- function(l, groups, expr, nth=NA, subpattern=0) {
 
 }
 
+#' This function matches contiguous sequences of fixations that follow
+#' a specified pattern.  This target pattern is specified using
+#' regular expressions.
+#'
+#' @title Match scanpath patterns
+#' @param l a vector of single characters.
+#' @param groups a grouping variable.  The search for matching
+#'   patterns in performed in each group separately.  Matches crossing
+#'   group boundaries are not considered.  This vector will typically
+#'   contain a trial id.
+#' @param expr a regular expression describing the target pattern.
+#' @param subpattern the subpattern of interest.  If zero, the
+#'   complete match will be marked.  If n>0, only the n-th subpattern
+#'   will be marked.  See examples.
+#' @return A vector giving the indices of the matching
+#'   fixations.  Only the first match within each group will be
+#'   marked.
+#' @export
+#' @examples
+#' data(eyemovements)
+#' words <- eyemovements$word
+#' l <- replace.all(words, letters[1:length(unique(words))])
+#' trial <- eyemovements$trial
+#' # Find fixations on word 6 (which is represented by letter "f"):
+#' idx <- match.scanpath(l, trial, "f")
 match.scanpath <- function(l, groups, expr, subpattern=0) {
 
   s <- tapply(l, groups, paste, collapse="")

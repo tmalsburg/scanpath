@@ -39,14 +39,14 @@ panel.scanpath <- function(x, y, groups=NULL, subscripts=NULL, ...) {
 
   if (!is.null(groups) & !is.null(subscripts)) {
     group <- as.integer(groups[subscripts][1])
-    colors <- trellis.par.get("superpose.line")$col
+    colors <- lattice::trellis.par.get("superpose.line")$col
     col <- colors[[((group-1)%%length(colors))+1]]
     # This is for marking fixations but there's no suitable pch:
     #panel.points(x, y, pch=3, col=col, cex=1)
-    panel.lines(x, y, col=col, ...)
+    lattice::panel.lines(x, y, col=col, ...)
   } else {
     #panel.points(x, y, pch=3, cex=1)
-    panel.lines(x, y, ...)
+    lattice::panel.lines(x, y, ...)
   }
 }
 
@@ -55,7 +55,7 @@ plot.scanpaths.2d <- function(data, groups=NULL, panel=panel.scanpath,
                               ylim=c(min(data$y), max(data$y)),
                               ...)
 {
-  xyplot(y~x|trial, data, panel=panel, xlim=xlim, ylim=ylim,
+  lattice::xyplot(y~x|trial, data, panel=panel, xlim=xlim, ylim=ylim,
          groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
 }
 
@@ -86,7 +86,7 @@ plot.scanpaths.1d <- function(data, groups=NULL, panel=panel.scanpath,
   if (is.null(ylim))
     ylim <- c(min(d), max(d))
 
-  xyplot(d~x|trial, data.frame(x=x, d=d, trial=trial),
+  lattice::xyplot(d~x|trial, data.frame(x=x, d=d, trial=trial),
          panel=panel, ylim=ylim, groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
 }
 
