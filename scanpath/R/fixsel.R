@@ -1,9 +1,14 @@
-pcre <- function(pattern, text, subpattern)
-{
-
-  stopifnot(as.integer(subpattern)==subpattern)
-  .Call("_gregexpr", pattern, text, subpattern)
-
+pcre <- function(pattern, text, subpattern) {
+  x <- gregexpr(pattern, text, perl=TRUE, useBytes=FALSE)
+  if (subpattern==0) {
+    x
+  } else {
+    lapply(x, function(i) {
+      r <- as.vector(attr(i, "capture.start")[,subpattern])
+      attr(r, "match.length") <- as.vector(attr(i, "capture.length")[,subpattern])
+      r
+    })
+  }
 }
 
 #' Given a vector of values \code{x} and a set of replacement values
