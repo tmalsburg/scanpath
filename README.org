@@ -20,7 +20,9 @@ On Linux this should work out of the box.  On OSX, it may be necessary to instal
 
 * Usage example
 
-Let's have a look at the toy data:
+You can find all code used below in the file [[file:README.R]].  You can open that file in RStudio and play with the code as you read through this mini-tutorial.
+
+Let's have a look at the toy data that is included in the package:
 
 #+BEGIN_SRC R :results table :exports both :colnames yes
 library(scanpath)
