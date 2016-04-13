@@ -265,9 +265,9 @@ prepare.data <- function(data, formula)
   stopifnot(length(terms) %in% 3:4)
   df <- data[terms]
   if (length(terms)==3) 
-    colnames(df) <- c("d", "x", "trial")
+    colnames(df) <- c("duration", "x", "trial")
   else
-    colnames(df) <- c("d", "x", "y", "trial")
+    colnames(df) <- c("duration", "x", "y", "trial")
   df
 }
 
@@ -316,18 +316,18 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
      as.integer(length(s$lon)),
      as.double(s$lon),
      as.double(s$lat),
-     as.double(log(s$d)),
+     as.double(log(s$duration)),
      as.integer(length(t$lon)),
      as.double(t$lon),
      as.double(t$lat),
-     as.double(log(t$d)),
+     as.double(log(t$duration)),
      modulator,
      result = double(1))$result
 
   if (normalize=="fixations")
     result <- result / (nrow(s) + nrow(t))
   else if (normalize=="durations")
-    result <- result / (sum(s$d) + sum(t$d))
+    result <- result / (sum(s$duration) + sum(t$duration))
   else if (normalize)
     stop("Unrecognized normalization parameter: ", normalize)
   result

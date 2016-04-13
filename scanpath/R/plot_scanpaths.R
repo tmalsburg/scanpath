@@ -50,11 +50,11 @@ plot_scanpaths <- function(formula, d, groups=NULL) {
 plot_scanpaths.1d <- function(d, terms) {
 
   l <- lapply(split(d, d$trial), function(t) {
-    d <- cumsum(t$d)
-    d <- rep(d, each=2)
-    d <- c(0, d[-length(d)])
+    duration <- cumsum(t$duration)
+    duration <- rep(duration, each=2)
+    duration <- c(0, duration[-length(duration)])
     data.frame(
-      d = d,
+      duration = duration,
       x = rep(t$x, each=2),
       trial = t$trial[1],
       group = rep(t$groups, each=2))
@@ -63,30 +63,28 @@ plot_scanpaths.1d <- function(d, terms) {
   d <- do.call(rbind, l)
 
   if (length(unique(d$group))==1) {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, d))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, duration))
   } else {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, d, colour=group))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, duration, colour=group))
   }
   
   p +
     ggplot2::geom_path() +
-    ggplot2::facet_wrap(~ trial) +
-    ggplot2::labs(x=terms[[2]], y=terms[[1]])
+    ggplot2::facet_wrap(~ trial)
 
 }
 
 plot_scanpaths.2d <- function(d, terms) {
 
   if (length(unique(d$group))==1) {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(d)))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(duration)))
   } else {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(d), colour=groups))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(duration), colour=groups))
   }
   
   p +
     ggplot2::geom_path(size=1) +
     ggplot2::geom_point(alpha=0.2) +
-    ggplot2::facet_wrap(~ trial) +
-    ggplot2::labs(x=terms[[2]], y=terms[[1]])
+    ggplot2::facet_wrap(~ trial)
 
 }
