@@ -25,7 +25,7 @@ similarities between the scanpaths of the subjects.
 }
 \examples{
 data(eyemovements)
-d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+d <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30)
 s <- constant.vars(eyemovements, trial)$subject
 avg.group.dist(d, s)
 }

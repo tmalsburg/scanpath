@@ -99,7 +99,7 @@ data(eyemovements)
 # distance (eye to screen) is 60 cm, 1 unit in the data (pixel) is
 # 1/30 cm.
 
-dissimilarities <- scasim(eyemovements, dur ~ x + y | trial,
+dissimilarities <- scasim(eyemovements, duration ~ x + y | trial,
                           512, 384, 60, 1/30)
 
 # Using cmdscale for fitting a map:

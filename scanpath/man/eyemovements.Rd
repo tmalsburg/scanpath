@@ -5,16 +5,15 @@
 \alias{eyemovements}
 \title{Fixational eye movements during reading a sentence}
 \format{In the data frame each row represents one fixation of the
-eyes.  The data frame has the following columns:
-\describe{
-\item{\code{subject}}{the id of the subject}
-\item{\code{trial_id}}{the id of the trial (unique only within subjects)}
-\item{\code{dur}}{the duration of a fixation in milliseconds}
-\item{\code{x}}{the x coordinate of a fixation in pixels}
-\item{\code{y}}{the y coordinate of a fixation in pixels}
-\item{\code{trial}}{the id of the trial (unique in the whole data set)}
-\item{\code{word}}{the word that was targeted by the fixation}
-}}
+  eyes.  Fixations are ordered chronologically within trial.  The
+  data frame has the following columns:
+  \describe{
+  \item{\code{subject}}{the id of the subject}
+  \item{\code{trial}}{the id of the trial}
+  \item{\code{word}}{the word that was targeted by the fixation}
+  \item{\code{x}}{the x coordinate of a fixation in pixels}
+  \item{\code{y}}{the y coordinate of a fixation in pixels}
+  \item{\code{duration}}{the duration of a fixation in milliseconds}}}
 \usage{
 data(eyemovements)
 }

@@ -31,8 +31,8 @@ that any other item in the set.
 }
 \examples{
 data(eyemovements)
-d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+d <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30)
 which.centroid(d)
-which.centroid(d, c("1:1", "1:2", "1:3"))
+which.centroid(d, c("1", "2", "3"))
 }
 

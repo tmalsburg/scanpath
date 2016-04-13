@@ -194,7 +194,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' # distance (eye to screen) is 60 cm, 1 unit in the data (pixel) is
 #' # 1/30 cm.
 #'
-#' dissimilarities <- scasim(eyemovements, dur ~ x + y | trial,
+#' dissimilarities <- scasim(eyemovements, duration ~ x + y | trial,
 #'                           512, 384, 60, 1/30)
 #' 
 #' # Using cmdscale for fitting a map:
@@ -241,7 +241,7 @@ scasim <- function(data, formula, center_x, center_y, viewing_distance,
 #' @export
 #' @examples
 #' data(eyemovements)
-#' d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+#' d <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30)
 #' s <- constant.vars(eyemovements, trial)$subject
 #' avg.group.dist(d, s)
 avg.group.dist <- function(d, groups) {
@@ -352,9 +352,9 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
 #' @export
 #' @examples
 #' data(eyemovements)
-#' d <- scasim(eyemovements, dur ~ x + y | trial, 512, 384, 60, 1/30)
+#' d <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30)
 #' which.centroid(d)
-#' which.centroid(d, c("1:1", "1:2", "1:3"))
+#' which.centroid(d, c("1", "2", "3"))
 which.centroid <- function(d, select=NULL) {
   if (!is.null(select)) {
     t <- rownames(d) %in% select
@@ -382,18 +382,16 @@ which.centroid <- function(d, select=NULL) {
 #' @name eyemovements
 #' @docType data
 #' @usage data(eyemovements)
-#' @format 
-#' In the data frame each row represents one fixation of the
-#' eyes.  The data frame has the following columns:
-#' \describe{
-#' \item{\code{subject}}{the id of the subject}
-#' \item{\code{trial_id}}{the id of the trial (unique only within subjects)}
-#' \item{\code{dur}}{the duration of a fixation in milliseconds}
-#' \item{\code{x}}{the x coordinate of a fixation in pixels}
-#' \item{\code{y}}{the y coordinate of a fixation in pixels}
-#' \item{\code{trial}}{the id of the trial (unique in the whole data set)}
-#' \item{\code{word}}{the word that was targeted by the fixation}
-#' }
+#' @format In the data frame each row represents one fixation of the
+#'   eyes.  Fixations are ordered chronologically within trial.  The
+#'   data frame has the following columns:
+#'   \describe{
+#'   \item{\code{subject}}{the id of the subject}
+#'   \item{\code{trial}}{the id of the trial}
+#'   \item{\code{word}}{the word that was targeted by the fixation}
+#'   \item{\code{x}}{the x coordinate of a fixation in pixels}
+#'   \item{\code{y}}{the y coordinate of a fixation in pixels}
+#'   \item{\code{duration}}{the duration of a fixation in milliseconds}}
 #' @keywords datasets
 
 NULL
