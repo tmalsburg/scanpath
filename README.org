@@ -175,10 +175,10 @@ The benefit of the resulting representation of scanpaths is that it have much we
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/clusters.png
 set.seed(10)
-clusters <- kmeans(map$points, 3, iter.max=100)
+clusters <- kmeans(map1, 3, iter.max=100)
 plot(map1, cex=4, col=clusters$cluster, pch=19)
-text(map1, labels=rownames(map$points), col="white")
-points(clusters$centers, col=1:3, pch=3, cex=2)
+text(map1, labels=rownames(map1), col="white")
+points(clusters$centers, col="blue", pch=3, cex=4)
 #+END_SRC
 
 #+RESULTS:

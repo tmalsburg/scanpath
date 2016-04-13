@@ -77,9 +77,9 @@ plot_scanpaths.1d <- function(d, terms) {
 plot_scanpaths.2d <- function(d, terms) {
 
   if (length(unique(d$group))==1) {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(duration)))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log10(duration)))
   } else {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(duration), colour=groups))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log10(duration), colour=groups))
   }
   
   p +
