@@ -143,13 +143,13 @@ Below is a plot showing the map of scanpaths:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/map_of_scanpath_space.png
 plot(map, cex=4)
-text(map, labels=rownames(map1))
+text(map, labels=rownames(map))
 #+END_SRC
 
 #+RESULTS:
 [[file:Plots/map_of_scanpath_space.png]]
 
-Interestingly, the scanpaths are arranged in the same way as in the plot of the data at the top except that the axes are mirrored.  Participants are arranged vertically and reading patterns are horizontally.  This suggests that the /scasim/ measure not just recovered these two different kinds of information (reading speed and reading strategy) but also that it can distinguish them.
+Interestingly, the scanpaths are arranged in the same way as in the plot of the data at the top except that the axes are mirrored.  Participants are arranged vertically and reading patterns are horizontally.  This suggests that the /scasim/ measure not just recovered these two different kinds of information (reading speed and reading strategy) but also that it can distinguish between them.
 
 To test how well this map represents the original dissimilarity scores, we can calculate the pair-wise differences on the map and compare them to the pair-wise /scasim/ scores:
 
@@ -163,13 +163,13 @@ plot(d1, d1.dash)
 
 This plot suggests that the map preserves the variance in dissimilarity scores really well.  Given this very good fit of the map, it appears that two dimensions were sufficient to describe the scanpath variance that is captured by /scasim/.  This is not surprising because the scanpaths in the toy data set were designed to vary with respect to two properties: 1.) The speed of the reader, and 2.) whether there was a regression back to the beginning of the sentence and how long it was.  
 
-The benefit of the map representation of scanpaths is that it has much weaker statistical dependencies and that it is much more suitable for all kinds of analyses.  For example, we can choose among a large number of clustering algorithms to test whether there are groups of similar scanpaths in a data set.  Below, we use the simple k-means algorithm to illustrate this:
+The benefit of the map representation is that it has much weaker statistical dependencies and that it is much more suitable for all kinds of analyses.  For example, we can choose among a large number of clustering algorithms to test whether there are groups of similar scanpaths in a data set.  Below, we use the simple k-means algorithm to illustrate this:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/clusters.png
 set.seed(10)
-clusters <- kmeans(map1, 3, iter.max=100)
-plot(map1, cex=4, col=clusters$cluster, pch=19)
-text(map1, labels=rownames(map1), col="white")
+clusters <- kmeans(map, 3, iter.max=100)
+plot(map, cex=4, col=clusters$cluster, pch=19)
+text(map, labels=rownames(map), col="white")
 points(clusters$centers, col="blue", pch=3, cex=4)
 #+END_SRC
 
@@ -178,7 +178,7 @@ points(clusters$centers, col="blue", pch=3, cex=4)
 
 In this plot, color indicates to which cluster a scanpath belongs and the crosses show the center of each cluster.
 
-Cluster analyses are just one out of many things that be used to analyze scanpath variance.  See the articles listed below for more details.
+Apart from cluster analyses there are many other ways to analyze scanpath variance.  See the articles listed below for more details.
 
 * References
 
