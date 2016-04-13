@@ -3,3 +3,4 @@ scanpath.Rcheck
 *.so
 scanpath_1.05.tar.gz
 scanpath/src/symbols.rds
+/scanpath/R/.Rhistory
