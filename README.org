@@ -1,26 +1,26 @@
 #+TITLE: Scanpath – An R Package for Analyzing Scanpaths
 #+AUTHOR: Titus von der Malsburg
 #+EMAIL: malsburg@ucsd.edu
-#+PROPERTY: header-args:R :session *R* :tangle yes :comments both :eval no-export
+#+PROPERTY: header-args:R :session *R2* :tangle yes :comments both :eval no-export
 
 [[http://dx.doi.org/10.5281/zenodo.31800][https://zenodo.org/badge/doi/10.5281/zenodo.31800.svg]]
 
-An R package with tools for analyzing scanpaths.  Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for details about this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]].  The package includes a simple toy dataset and example code.
+An R package with tools for analyzing scanpaths.  Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for the details of this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]].  The package includes a simple toy dataset and example code.
 
 * Install
 
 #+BEGIN_SRC R :exportss none
-  library("devtools");
-  install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
+library("devtools");
+install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
 #+END_SRC
 
 #+RESULTS:
 
-On Linux this should work out of the box.  On OSX, it may be necessary to install the developer tools.  I have no idea what needs to be done on Windows to make this work.  It may work, but I haven’t tried it.  Feedback welcome.
+On Linux this should work out of the box.  On OSX, it may be necessary to install the developer tools.  I have no idea what needs to be done to make this work on Windows.  It may work, but I haven’t tried it.  Feedback welcome.
 
 * Usage example
 
-You can find all code used below in the file [[file:README.R]].  You can open that file in RStudio and play with the code as you read through this mini-tutorial.
+You can find all code shown below in the file [[file:README.R]].  You can open that file in RStudio and play with the code as you read through this mini-tutorial.
 
 Let's have a look at the toy data that is included in the package:
 
@@ -40,7 +40,7 @@ head(eyemovements)
 | Anne    |     1 |    3 | 165.26 | 386.75 |      156 |
 | Anne    |     1 |    4 | 167.25 | 389.51 |       34 |
 
-Next, we use a function from the package to plot the scanpaths in this data set.  In this plot, each panel shows the data from one trial.  There are three participants in this data set which coded by color.  The data is from a sentence reading task.  The x-axis shows words and the y-axis time in milliseconds.
+To get a sense of what is going on in this data set, we create a series of plots.  For this purpose, we use the function ~plot_scanpaths~ from the /scanpath/ package.  In the first plot below, each panel shows the data from one trial.  There are three participants which are coded by color.  The data is from a sentence reading task.  The x-axis shows words and the y-axis time within trial in milliseconds.
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths.png :width 600 :height 600 :res 100
 plot_scanpaths(duration ~ word | trial, eyemovements, subject)
@@ -49,7 +49,9 @@ plot_scanpaths(duration ~ word | trial, eyemovements, subject)
 #+RESULTS:
 [[file:Plots/scanpaths.png]]
 
-In the following plots, we plot the fixations using their x- and y-coordinates.  Each circle is a fixation and the size of the circle represents the duration of the corresponding fixation.
+We can see that the participants differ in their reading speed.  Also we see that each participant read the sentence more or less straight from left to right (trials: 1, 4, 7), or with a short regressions from the end of the sentence to its beginning (trials: 2, 5, 8), or with a long regression from the end of the sentence (trials: 3, 6, 9).
+
+In the next plot, we use the fixations’ x- and y-coordinates.  Each circle is a fixation and the size of the circle represents the duration of the corresponding fixation.
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths2.png :width 600 :height 600 :res 100
 plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
@@ -58,7 +60,7 @@ plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
 #+RESULTS:
 [[file:Plots/scanpaths2.png]]
 
-The function ~plot_scanpaths~ return a ggplot2 object.  This means that we can style the plot before rendering it. For example, we can change the limits of the axes:
+The function ~plot_scanpaths~ returns a /ggplot2/ object.  This means that we can style the plot before rendering it. For example, we can change the limits of the axes:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths3.png :width 600 :height 600 :res 100
 library(ggplot2)
@@ -69,7 +71,7 @@ p + xlim(0, 600) + ylim(284, 484)
 #+RESULTS:
 [[file:Plots/scanpaths3.png]]
 
-Now, we calculate the pair-wise similarities of the nine scanpaths in the dataset using the scasim measure.  A simplifying intuition is that the measure quantifies the time that was spent looking at different things or at the same things in different order.  For details, see [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]].
+Now, we calculate the pair-wise similarities of the nine scanpaths in the dataset using the /scasim/ measure.  A simplifying intuition is that the measure quantifies the time that was spent looking at different things or at the same things in different order.  For a precise definition see [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]].
 
 #+BEGIN_SRC R :results table :exports both :colnames yes :rownames yes
 d1 <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30, normalize=FALSE)
@@ -89,7 +91,9 @@ round(d1, 2)
 | 8 | 38.72 | 15.91 | 40.45 | 35.83 | 10.83 | 37.55 | 34.74 |     0 | 35.92 |
 | 9 | 65.47 | 42.65 | 18.62 | 62.87 | 37.57 | 12.78 | 61.21 | 35.92 |     0 |
 
-The time that was spent looking at different things of course depends on the duration of the two compared trials.  (total duration of the two compared scanpaths constitutes an upper bound).  This means that two long scanpaths may  have a larger dissimilarity than two shorter scanpaths even if they look more similar.  Depending on the research question, this may be undesirable.  One way to get rid of the trivial influence of total duration is to normalize the dissimilarity scores.  For example, we can divide them by the total duration of the two compared scanpaths:
+Like the function ~plot_scanpaths~, the function ~scasim~ takes a formula and a data frame as parameters.  The formula specifies which columns in the data frame should be used for the calculations.  To account for distortion due to visual perspective, the comparison of the scanpaths is carried out in visual field coordinates (latitude and longitude).  In order to transform the pixel coordinates provided by the eye-tracker to visual field coordinates, the ~scasim~ function needs some extra information.  The first is the position of the gaze when the participant looked straight ahead (512, 384, in the present case), the distance of the eyes from the screen (60 cm), and the size of one pixel in the unit that was used to specify the distance from the screen (1/30).  Finally, we have to specify a normalization procedure.  ~normalize=FALSE~ means that we don’t want to normalize.  See the documentation of the ~scasim~ function for details.
+
+The time that was spent looking at different things of course depends on the duration of the two compared trials.  (total duration of the two compared scanpaths constitutes an upper bound).  This means that two long scanpaths may have a larger dissimilarity than two shorter scanpaths even if they look more similar.  Depending on the research question, this may be undesirable.  One way to get rid of the trivial influence of total duration is to normalize the dissimilarity scores.  For example, we can divide them by the total duration of the two compared scanpaths:
 
 #+BEGIN_SRC R :results table :exports both :colnames yes :rownames yes
 d2 <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30, normalize="durations")
@@ -109,15 +113,15 @@ round(d2, 4)
 | 8 | 0.0062 | 0.0024 | 0.0054 | 0.0052 | 0.0014 | 0.0044 | 0.0046 |      0 | 0.0038 |
 | 9 | 0.0087 | 0.0054 | 0.0021 | 0.0078 | 0.0043 | 0.0013 | 0.0069 | 0.0038 |      0 |
 
-The number are much smaller now and can be interpreted as the proportion of time that was spent looking at different things.
+The number are smaller now and can be interpreted as the proportion of time that was spent looking at different things.
 
-The numbers in the matrix above capture a lot of information about the scanpath variance in the data set.  However, dissimilarity scores are somewhat tricky to analyze.  One problem is that these values have strong statistical dependencies.  When we change on scanpath, this affects /n/ dissimilarity scores.  This has to be kept in mind when doing inferential stats directly on the dissimilarity scores.  While there are solutions for dealing with this issue, it can be more convenient to produce a representation that is free from this problem.  One way to do this is to calculate a so-called “map of scanpath space.”  On such a map every point represents a scanpath and the distances on the map reflect the dissimilarities in the above matrix.
+The numbers in the matrix above capture a lot of information about the scanpath variance in the data set.  However, dissimilarity scores are somewhat tricky to analyze.  One problem is that these values have strong statistical dependencies.  When we change one scanpath, this affects /n/ dissimilarity scores.  This has to be kept in mind when doing inferential stats directly on the dissimilarity scores.  While there are solutions for this, it is typically more convenient to produce a representation of scanpath variance that is free from this problem.  One such representation is what we call the “map of scanpath space.”  On such a map, every point represents a scanpath and the distances on the map reflect the dissimilarities according to our scanpath measure, i.e. the dissimilarity scores in the matrix above.
 
-The method for calculating such maps is called multi-dimensional scaling and one version of the general idea is implemented in the function ~cmdscale~.
+The method for calculating these maps is called multi-dimensional scaling and one simple version of the general idea is implemented in the function ~cmdscale~.
 
 #+BEGIN_SRC R :results table :exports both :colnames yes :rownames yes
-map1 <- cmdscale(d1)
-round(map1, 5)
+map <- cmdscale(d1)
+round(map, 5)
 #+END_SRC
 
 #+RESULTS:
@@ -133,47 +137,33 @@ round(map1, 5)
 | 8 |   0.22881 |  15.28742 |
 | 9 | -33.02739 |   6.17844 |
 
-A more sophisticated variant is provided by the function ~isoMDS~ in the package ~MASS~.
+The table above contains two numbers for each scanpath in the data set.  These numbers (~V1~ and ~V2~) determine a scanpath’s location in the two-dimensional scanpath space created by ~cmdscale~.  How many dimensions we need is an empirical question.
 
-#+BEGIN_SRC R :results table :exports both :colnames yes :rownames yes
-library(MASS)
-map2 <- isoMDS(d1)
-round(map2$points, 5)
+Below is a plot showing the map of scanpaths:
+
+#+BEGIN_SRC R :results graphics :exports both :file Plots/map_of_scanpath_space.png
+plot(map, cex=4)
+text(map, labels=rownames(map1))
 #+END_SRC
 
 #+RESULTS:
-|   |        V1 |        V2 |
-|---+-----------+-----------|
-| 1 |  30.57631 |  -6.59302 |
-| 2 |   0.75934 |  -6.64837 |
-| 3 | -29.40076 | -13.33893 |
-| 4 |  30.85464 |  -0.06643 |
-| 5 |  -0.05598 |   1.58076 |
-| 6 | -31.56042 |  -0.46588 |
-| 7 |   31.0484 |   6.44287 |
-| 8 |   0.22446 |   8.10701 |
-| 9 | -32.44598 |  10.98198 |
+[[file:Plots/map_of_scanpath_space.png]]
 
-Every scanpath is now described by two variables, V1 and V2.  The stress value for this map is very low, which suggests that the map faithfully represents the variance in the dissimilarity scores.  (Stress values below 0.2 are considered acceptable and values below 0.1 are good.) 
+Interestingly, the scanpaths are arranged in the same way as in the plot of the data at the top except that the axes are mirrored.  Participants are arranged vertically and reading patterns are horizontally.  This suggests that the /scasim/ measure not just recovered these two different kinds of information (reading speed and reading strategy) but also that it can distinguish them.
 
-#+BEGIN_SRC R :results raw :exports both
-round(map$stress, 3)
+To test how well this map represents the original dissimilarity scores, we can calculate the pair-wise differences on the map and compare them to the pair-wise /scasim/ scores:
+
+#+BEGIN_SRC R :results graphics :exports both :file Plots/fit_of_map.png
+d1.dash <- as.matrix(dist(map))
+plot(d1, d1.dash)
 #+END_SRC
 
 #+RESULTS:
-0.06
+[[file:Plots/fit_of_map.png]]
 
-This low stress value, effectively means that two dimensions are sufficient to describe the scanpath variance that is captured by the scasim measure.  This is not surprising because the scanpaths in the toy data set were designed to vary with respect to two properties: 1.) The speed of the reader, and 2.) whether there was a regression back to the beginning of the sentence and how long it was.  When we plot the map of scanpath space, we find that the two variables produced by ~isoMDS~ reflect precisely these properties:
+This plot suggests that the map preserves the variance in dissimilarity scores really well.  Given this very good fit of the map, it appears that two dimensions were sufficient to describe the scanpath variance that is captured by /scasim/.  This is not surprising because the scanpaths in the toy data set were designed to vary with respect to two properties: 1.) The speed of the reader, and 2.) whether there was a regression back to the beginning of the sentence and how long it was.  
 
-#+BEGIN_SRC R :results graphics :exports both :file Plots/map_of_nine_scanpaths.png
-plot(map1, cex=4)
-text(map1, labels=rownames(map1))
-#+END_SRC
-
-#+RESULTS:
-[[file:Plots/map_of_nine_scanpaths.png]]
-
-The benefit of the resulting representation of scanpaths is that it have much weaker statistical dependencies and that this representation is much suitable for all kinds of analyses.  For example, we choose among a large number of clustering algorithms to test whether there are groups of self-similar scanpaths in a data set.  Below, we use the k-means clustering algorithm (not necessarily recommended but simple):
+The benefit of the map representation of scanpaths is that it has much weaker statistical dependencies and that it is much more suitable for all kinds of analyses.  For example, we can choose among a large number of clustering algorithms to test whether there are groups of similar scanpaths in a data set.  Below, we use the simple k-means algorithm to illustrate this:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/clusters.png
 set.seed(10)
