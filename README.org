@@ -165,7 +165,7 @@ This low stress value, effectively means that two dimensions are sufficient to d
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/map_of_nine_scanpaths.png
 plot(map1, cex=4)
-text(map1, labels=rownames(map$points))
+text(map1, labels=rownames(map1))
 #+END_SRC
 
 #+RESULTS:
@@ -184,7 +184,7 @@ points(clusters$centers, col="blue", pch=3, cex=4)
 #+RESULTS:
 [[file:Plots/clusters.png]]
 
-In this plot, the color indicates to which cluster a scanpath belongs and the crosses show the center of each cluster.
+In this plot, color indicates to which cluster a scanpath belongs and the crosses show the center of each cluster.
 
 Cluster analyses are just one out of many things that be used to analyze scanpath variance.  See the articles listed below for more details.
 
