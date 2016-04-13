@@ -1,92 +1,92 @@
 
-#
-#  Functions for plotting scanpaths:
-#
 
-plot.scanpaths <- function(formula, data, groups=NULL, panel=panel.scanpath,
-                           auto.key=if(!is.null(groups)) list(columns = 2, lines=TRUE),
-                           ...)
-{
+#' This function plots a set of scanpaths, each scanpath in a separate
+#' panel.
+#'
+#' @param formula specifies the format of the plots.  For example,
+#'   \code{dur ~ word | trial} puts the words on the x-axis and time
+#'   on the y-axis.  Each trial is plotted in its own panel.  This
+#'   assumes that words are numbered in ascending order.  Another
+#'   example: \code{dur ~ x + y | trial} plots a circle for each
+#'   fixation.  The location of the circle is determined by the x- and
+#'   y-coordinates of the fixation and its size by the
+#'   duration.  Other variables of interest can be used instead of
+#'   duration, for example pupil size.  Note that the left-hand side
+#'   variable is log-transformed in circle plots.
+#' @param d is the data frame containing the variables used in the
+#'   formula.
+#' @param groups a variable used to distinguish different groups of
+#'   scanpaths by color.  Can be used to color-code conditions or
+#'   participants.
+#' @return A ggplot object.  Can be modified before display, for
+#'   example, by adding axis limits etc.  See examples below.
+#' @export
+#' @examples
+#' data(eyemovements)
+#' plot_scanpaths(duration ~ word | trial, eyemovements)
+#' plot_scanpaths(duration ~ word | trial, eyemovements, subject)
+#' plot_scanpaths(duration ~ x + y | trial, eyemovements)
+#' plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
+#' p <- plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
+#' p + ggplot2::xlim(0, 600) + ggplot2::ylim(284, 484)
+plot_scanpaths <- function(formula, d, groups=NULL) {
 
-  groups <- eval(substitute(groups), data, parent.frame())
-  data <- prepare.data(data, formula)
+  groups <- eval(substitute(groups), d, parent.frame())
+  d <- prepare.data(d, formula)
+  if (is.null(groups)) {
+    d$groups <- 1
+  } else {
+    d$groups <- groups
+  }
 
-  args <- list(...)
   terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
-  xlab <- terms[[2]]
 
-  if (length(data) == 3) {
-    colnames(data)[[2]] <- "x"
-    plot.func <- plot.scanpaths.1d
-    ylab <- "time"
+  if (length(terms)==3)
+    plot_scanpaths.1d(d, terms)
+  else if (length(terms)==4)
+    plot_scanpaths.2d(d, terms)
+}
+
+plot_scanpaths.1d <- function(d, terms) {
+
+  l <- lapply(split(d, d$trial), function(t) {
+    d <- cumsum(t$d)
+    d <- rep(d, each=2)
+    d <- c(0, d[-length(d)])
+    data.frame(
+      d = d,
+      x = rep(t$x, each=2),
+      trial = t$trial[1],
+      group = rep(t$groups, each=2))
+  })
+
+  d <- do.call(rbind, l)
+
+  if (length(unique(d$group))==1) {
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, d))
   } else {
-    plot.func <- plot.scanpaths.2d
-    ylab <- terms[[3]]
-  } 
-
-  if (!"xlab" %in% names(args))
-    args$xlab <- xlab
-  if (!"ylab" %in% names(args))
-    args$ylab <- ylab
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, d, colour=group))
+  }
   
-  do.call(plot.func, c(list(data, "groups"=groups, "panel"=panel,
-                            auto.key=auto.key), args))
+  p +
+    ggplot2::geom_path() +
+    ggplot2::facet_wrap(~ trial) +
+    ggplot2::labs(x=terms[[2]], y=terms[[1]])
+
 }
 
-# TODO: Fix plots when ROIs are factor (currently it drops unused rois and puts
-# wrong labels on the x-axis).
-panel.scanpath <- function(x, y, groups=NULL, subscripts=NULL, ...) {
+plot_scanpaths.2d <- function(d, terms) {
 
-  if (!is.null(groups) & !is.null(subscripts)) {
-    group <- as.integer(groups[subscripts][1])
-    colors <- lattice::trellis.par.get("superpose.line")$col
-    col <- colors[[((group-1)%%length(colors))+1]]
-    # This is for marking fixations but there's no suitable pch:
-    #panel.points(x, y, pch=3, col=col, cex=1)
-    lattice::panel.lines(x, y, col=col, ...)
+  if (length(unique(d$group))==1) {
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(d)))
   } else {
-    #panel.points(x, y, pch=3, cex=1)
-    lattice::panel.lines(x, y, ...)
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log(d), colour=groups))
   }
+  
+  p +
+    ggplot2::geom_path(size=1) +
+    ggplot2::geom_point(alpha=0.2) +
+    ggplot2::facet_wrap(~ trial) +
+    ggplot2::labs(x=terms[[2]], y=terms[[1]])
+
 }
-
-plot.scanpaths.2d <- function(data, groups=NULL, panel=panel.scanpath,
-                              xlim=c(min(data$x), max(data$x)),
-                              ylim=c(min(data$y), max(data$y)),
-                              ...)
-{
-  lattice::xyplot(y~x|trial, data, panel=panel, xlim=xlim, ylim=ylim,
-         groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
-}
-
-plot.scanpaths.1d <- function(data, groups=NULL, panel=panel.scanpath,
-                              ylim=NULL, ...)
-{
-
-  # Create timeline y-axis from fixation durations:
-
-  #l <- levels(data$trial)
-  trial <- as.factor(rep(data$trial, each=2))
-  #levels(trial) <- l
-
-  if (!is.null(groups)) 
-    groups <- rep(groups, each=2)
-  x <- rep(data$x, each=2)
-  d <- rep(data$d, each=2)
-  s <- c(TRUE, diff(as.integer(as.factor(trial))) != 0)
-  d <- ifelse(s, 0, d)
-  idxs <- setdiff(2:nrow(data)*2, which(s)+1)
-
-  # CHECK: Is it possible to use filter or something similar here?
-  for (i in idxs) {
-    d[[i-1]] <- d[[i-2]]
-    d[[i]] <- d[[i]] + d[[i-1]]
-  }
-
-  if (is.null(ylim))
-    ylim <- c(min(d), max(d))
-
-  lattice::xyplot(d~x|trial, data.frame(x=x, d=d, trial=trial),
-         panel=panel, ylim=ylim, groups=groups, drop.unused.levels=list(cond=TRUE, data=FALSE), ...)
-}
-

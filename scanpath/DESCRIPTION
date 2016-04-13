@@ -11,4 +11,4 @@ Description: Provides a similarity measure for scanpaths that is sensitive to
     oculo-motor control.
 License: GPL-2
 LazyLoad: yes
-Imports: lattice, gdata
+Imports: ggplot2, gdata
