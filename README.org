@@ -16,7 +16,7 @@ install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
 
 #+RESULTS:
 
-On Linux this should work out of the box.  On OSX, it may be necessary to install the developer tools.  I have no idea what needs to be done to make this work on Windows.  It may work, but I haven’t tried it.  Feedback welcome.
+On Linux and macOS, this should work out of the box.  I have no idea what needs to be done to make this work on Windows.  It may work, but I haven’t tried it.  Feedback welcome.
 
 * Usage example
 
@@ -176,7 +176,7 @@ points(clusters$centers, col="blue", pch=3, cex=4)
 #+RESULTS:
 [[file:Plots/clusters.png]]
 
-In this plot, color indicates to which cluster a scanpath belongs and the crosses show the center of each cluster.
+In this plot, color indicates to which cluster a scanpath belongs and the crosses show the center of each cluster.  We see that the clusters correspond to the different reading patterns and that participants are ordered according to their reading speed within the clusters.
 
 Apart from cluster analyses there are many other ways to analyze scanpath variance.  See the articles listed below for more details.
 
