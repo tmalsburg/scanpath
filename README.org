@@ -35,7 +35,7 @@ An R package for analyzing scanpaths in eye movement data.  The package includes
 
 To install the latest version of the package, execute the following commands:
 
-#+BEGIN_SRC R :exports none :eval no
+#+BEGIN_SRC R :eval no
 library("devtools");
 install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
 #+END_SRC
