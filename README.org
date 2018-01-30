@@ -24,7 +24,7 @@
 #+LaTeX_HEADER: \let\enumerate\compactenum
 #+PROPERTY: header-args:R :session *R* :tangle yes :comments both :eval yes
 
-@@html:<a herf="[[http://dx.doi.org/10.5281/zenodo.31800][https://zenodo.org/badge/doi/10.5281/zenodo.31800.svg]]"><img src="[[http://dx.doi.org/10.5281/zenodo.31800][https://zenodo.org/badge/doi/10.5281/zenodo.31800.svg]]"></a>@@
+[[http://dx.doi.org/10.5281/zenodo.31800][https://zenodo.org/badge/doi/10.5281/zenodo.31800.svg]]
 
 An R package for analyzing scanpaths in eye movement data.  The package includes a simple toy dataset and example code.  Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for the details of this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]] and a PDF-version of this page [[https://github.com/tmalsburg/scanpath/blob/master/README.pdf?raw=true][here]].
 
