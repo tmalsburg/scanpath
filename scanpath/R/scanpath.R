@@ -316,11 +316,11 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
      as.integer(length(s$lon)),
      as.double(s$lon),
      as.double(s$lat),
-     as.double(log(s$duration)),
+     as.double(s$duration),
      as.integer(length(t$lon)),
      as.double(t$lon),
      as.double(t$lat),
-     as.double(log(t$duration)),
+     as.double(t$duration),
      modulator,
      result = double(1))$result
 
