@@ -1,3 +1,8 @@
+Version 1.06
+============
+Fixation durations are no longer logarithmized when calculating
+scanpath similarity.
+
 Version 1.02
 ============
 Added function which.mean that can be used to indentify prototypical scanpaths. 

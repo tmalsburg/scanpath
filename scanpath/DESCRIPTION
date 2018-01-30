@@ -1,8 +1,8 @@
 Package: scanpath
 Type: Package
-Title: Tools for analyzing spatio-temporal patterns in eye movements
-Version: 1.05
-Date: 2014-02-04
+Title: Tools for Analyzing Spatio-Temporal Patterns in Eye Movements
+Version: 1.06
+Date: 2018-01-29
 Author: Titus von der Malsburg
 Maintainer: Titus von der Malsburg <malsburg@posteo.de>
 Description: Provides a similarity measure for scanpaths that is sensitive to
@@ -12,3 +12,4 @@ Description: Provides a similarity measure for scanpaths that is sensitive to
 License: GPL-2
 LazyLoad: yes
 Imports: ggplot2, gdata
+RoxygenNote: 6.0.1
