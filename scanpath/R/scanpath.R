@@ -249,7 +249,7 @@ avg.group.dist <- function(d, groups) {
     d <- as.matrix(d)
   # This nifty trick was recommended to me by Chuck C. Berry:
   groups <- factor(groups, ordered=TRUE)
-  mat <- model.matrix(~0+groups)
+  mat <- stats::model.matrix(~0+groups)
   tab <- table(groups)
   means <- (t(mat) %*% d %*% mat) / outer(tab, tab)
   
