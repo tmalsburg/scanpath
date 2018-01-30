@@ -42,9 +42,14 @@ plot_scanpaths <- function(formula, d, groups=NULL) {
   terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
 
   if (length(terms)==3)
-    plot_scanpaths.1d(d, terms)
+    p <- plot_scanpaths.1d(d, terms) + ggplot2::labs(y="Time")
   else if (length(terms)==4)
-    plot_scanpaths.2d(d, terms)
+    p <- plot_scanpaths.2d(d, terms)
+
+  p +
+    ggplot2::theme(legend.position = "top") +
+    ggplot2::scale_colour_discrete(name = "Group:") +
+    ggplot2::scale_size(name = "Duration (log10):")
 }
 
 plot_scanpaths.1d <- function(d, terms) {
