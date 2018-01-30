@@ -33,14 +33,12 @@ An R package for analyzing scanpaths in eye movement data.  The package includes
 
 * Install
 
+To install the latest version of the package, execute the following commands:
+
 #+BEGIN_SRC R :exports none :eval no
 library("devtools");
 install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
 #+END_SRC
-
-#+RESULTS:
-
-On Linux and macOS, this should work out of the box.  I have no idea what needs to be done to make this work on Windows.  It may work, but I haven’t tried it.  Feedback welcome.
 
 * Usage example
 
