@@ -5,8 +5,7 @@
 \title{Calculate pair-wise similarities among a set of scanpaths}
 \usage{
 scasim(data, formula, center_x, center_y, viewing_distance, unit_size,
-  modulator = 0.83, data2 = NULL, formula2 = formula,
-  normalize = "fixations")
+  modulator = 0.83, data2 = NULL, formula2 = formula, normalize = FALSE)
 }
 \arguments{
 \item{data}{is a data frame containing the eye movement data.  Each

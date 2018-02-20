@@ -52,7 +52,7 @@ idx <- match.scanpath(words, trial, "3.+2.*")
 scanpaths3 <- eyemovements[idx,]
 plot_scanpaths(duration~x|trial, scanpaths3)
 
-# Find scanpaths spanning words 6, 7, and 8 but only when those that
+# Find scanpaths spanning words 6, 7, and 8 but only those that
 # are directly preceded by a fixation on word 4:
 idx <- match.scanpath(words, trial, "4([678]+)", subpattern=1)
 scanpaths4 <- eyemovements[idx,]
