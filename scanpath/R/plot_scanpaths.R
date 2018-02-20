@@ -34,19 +34,21 @@ plot_scanpaths <- function(formula, d, groups=NULL) {
   groups <- eval(substitute(groups), d, parent.frame())
   d <- prepare.data(d, formula)
   if (is.null(groups)) {
-    d$groups <- 1
+    d$groups <- as.integer(1)
   } else {
     d$groups <- groups
   }
 
   terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
 
-  if (length(terms)==3)
+  if (length(terms)==3) {
     p <- plot_scanpaths.1d(d, terms) + ggplot2::labs(y="Time")
-  else if (length(terms)==4)
+  } else if (length(terms)==4) {
     p <- plot_scanpaths.2d(d, terms)
+  } else {
+    stop("Formula for plotting has incorrect syntax.")
+  }
 
-  p +
     ggplot2::theme(legend.position = "top") +
     ggplot2::scale_colour_discrete(name = "Group:") +
     ggplot2::scale_size(name = "Duration (log10):")
