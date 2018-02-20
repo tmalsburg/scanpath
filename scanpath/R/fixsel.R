@@ -52,50 +52,59 @@ replace.all <- function(x, r, res.type=as.character, na.value=NA, ...) {
 
 }
 
-#' This function uses regular expressions to identify elements in a
-#' vector of letters where a specific pattern begins.  Among other
-#' things, this can be used to identify certain eye movement patterns
-#' in fixation data.
+#' Finds fixations embedded in a context that is specified using a
+#' regular expression.
 #'
-#' @title Mark the beginning of specified pattern in a letter sequence
-#' @param l a vector of single characters.
-#' @param groups a grouping variable.  The search for matching
-#' patterns in performed in each group separately.  Matches crossing
-#' group boundaries are not considered.
-#' @param expr a regular expression describing the pattern.
-#' @param nth specifies which match should be returned if there were
-#' several within a group.  The default is to return all matches.
+#' @title Find specific fixations
+#' @param l a vector of single letters or single-digit integers each
+#'   representing a fixation on a region of interest.
+#' @param groups a grouping variable indicating to which scanpath each
+#'   fixation belongs.  The search for matching patterns in performed
+#'   within each group separately and matches crossing group boundaries
+#'   are not considered.
+#' @param expr a regular expression describing the scanpath pattern of
+#'   interest.
+#' @param nth specifies which match should be returned when there are
+#'   multiple within a group.  The default is to return all matches.
 #' @param subpattern the subpattern of interest.  If zero, the
-#' beginning of the full pattern will be marked.  If n>0, the
-#' beginning of the n-th subpattern will be marked.  See examples.
-#' @return A vector giving the indices in l where the matches
-#' begin.  If subpattern > 0, then the indices will point to the
-#' beginning of the subpatterns.
+#'   beginnings of the full patterns will be returned.  If n>0, the
+#'   beginnings of the n-th subpatterns will be returned.
+#' @return A vector giving the indices of the matches in l.
 #' @export
 #' @examples
 #' data(eyemovements)
 #' words <- eyemovements$word
-#' l <- replace.all(words, letters[1:length(unique(words))])
 #' trial <- eyemovements$trial
+#'
 #' # Find fixations on word 6 (which is represented by letter "f"):
-#' idx <- find.fixation(l, trial, "f")
-#' words[idx]
+#' idx <- find.fixation(words, trial, "6")
+#' eyemovements[idx,]
+#'
 #' # Find fixations on word 6 but only the second match within
 #' # a group (i.e., trial):
-#' idx <- find.fixation(l, trial, "f", nth=2)
-#' words[idx]
-#' # Find fixations on word 6 that are followed by fixations on word 7 ("g"):
-#' idx <- find.fixation(l, trial, "fg")
-#' words[idx]
-#' # Find those fixations on word 6 that followed fixations on word 5 ("e"):
-#' idx <- find.fixation(l, trial, "e(f)", subpattern=1)
-#' words[idx]
+#' idx <- find.fixation(words, trial, "6", nth=2)
+#' eyemovements[idx,]
+#'
+#' # Find fixations on word 6 that are followed by fixations on word 7:
+#' idx <- find.fixation(words, trial, "67")
+#' eyemovements[idx,]
+#'
+#' # Find those fixations on word 6 that are preceded by fixations on
+#' # word 5:
+#' idx <- find.fixation(words, trial, "5(6)", subpattern=1)
+#' eyemovements[idx,]
+#'
 #' # Find the beginning of a second sweep over the sentence:
-#' idx <- find.fixation(l, trial, "a[b-h]+(a+[b-g]+)", subpattern=1)
-#' words[idx]
+#' idx <- find.fixation(words, trial, "[123]+[456]+[78]+([123]+[456]+[78]+)", subpattern=1)
+#' eyemovements[idx,]
 find.fixation <- function(l, groups, expr, nth=NA, subpattern=0) {
   
-  stopifnot(all(nchar(l)==1))
+  l <- as.character(l)
+  if (!all(nchar(l)==1)) {
+    stop("Some region identifiers have more (or less) digits than one: ",
+         paste(unique(l)[nchar(unique(l))!=1], collapse=", "))
+  }
+
   stopifnot(is.na(nth)||floor(nth)==nth)
   stopifnot(is.na(nth)||nth>0)
 
@@ -119,37 +128,69 @@ find.fixation <- function(l, groups, expr, nth=NA, subpattern=0) {
 
 }
 
-#' This function matches contiguous sequences of fixations that follow
-#' a specified pattern.  This target pattern is specified using
-#' regular expressions.
+#' Identifies sequences of fixations that match a pattern specified
+#' using a regular expression.
 #'
-#' @title Match scanpath patterns
-#' @param l a vector of single characters.
-#' @param groups a grouping variable.  The search for matching
-#'   patterns in performed in each group separately.  Matches crossing
-#'   group boundaries are not considered.  This vector will typically
-#'   contain a trial id.
-#' @param expr a regular expression describing the target pattern.
+#' @title Identify scanpath patterns
+#' @param l a vector of single letters or single-digit integers each
+#'   representing a fixation on a region of interest.
+#' @param groups a grouping variable indicating to which scanpath each
+#'   fixation belongs.  The search for matching patterns in performed
+#'   within each group separately and matches crossing group
+#'   boundaries are not considered.
+#' @param expr a regular expression describing the scanpath pattern of
+#'   interest.
 #' @param subpattern the subpattern of interest.  If zero, the
 #'   complete match will be marked.  If n>0, only the n-th subpattern
 #'   will be marked.  See examples.
 #' @return A vector giving the indices of the matching
-#'   fixations.  Only the first match within each group will be
+#'   fixations.  Only the first match within each scanpath will be
 #'   marked.
 #' @export
 #' @examples
 #' data(eyemovements)
 #' words <- eyemovements$word
-#' l <- replace.all(words, letters[1:length(unique(words))])
 #' trial <- eyemovements$trial
-#' # Find fixations on word 6 (which is represented by letter "f"):
-#' idx <- match.scanpath(l, trial, "f")
+#'
+#' # Scanpaths from the last word until the end of the trial:
+#' idx <- match.scanpath(words, trial, "8.+")
+#' scanpaths1 <- eyemovements[idx,]
+#' plot_scanpaths(duration~x|trial, scanpaths1)
+#'
+#' # Scanpaths from third word until a fixation on the second word:
+#' idx <- match.scanpath(words, trial, "3.+2")
+#' scanpaths2 <- eyemovements[idx,]
+#' plot_scanpaths(duration~x|trial, scanpaths2)
+#'
+#' # Find scanpaths from the third word until the end of the trial but
+#' # only if they contain a fixation on the second word:
+#' idx <- match.scanpath(words, trial, "3.+2.*")
+#' scanpaths3 <- eyemovements[idx,]
+#' plot_scanpaths(duration~x|trial, scanpaths3)
+#'
+#' # Find scanpaths spanning words 6, 7, and 8 but only when those that
+#' # are directly preceded by a fixation on word 4:
+#' idx <- match.scanpath(words, trial, "4([678]+)", subpattern=1)
+#' scanpaths4 <- eyemovements[idx,]
+#' plot_scanpaths(duration~word|trial, scanpaths4)
 match.scanpath <- function(l, groups, expr, subpattern=0) {
+
+  l <- as.character(l)
+  if (!all(nchar(l)==1)) {
+    stop("Some region identifiers have more (or less) digits than one: ",
+         paste(unique(l)[nchar(unique(l))!=1], collapse=", "))
+  }
 
   s <- tapply(l, groups, paste, collapse="")
 
   hitsg <- pcre(expr, s, subpattern)
   hits <- sapply(hitsg, function(x) x[[1]])
+
+  if (all(hits==-1)) {
+    warning("No fixations match the specified pattern.")
+    return(integer(0))
+  }
+
   mlen <- sapply(hitsg, function(x) attr(x, "match.length")[[1]])
   offsets <- c(0, cumsum(nchar(s)))[1:length(hits)]
 
@@ -160,9 +201,7 @@ match.scanpath <- function(l, groups, expr, subpattern=0) {
   hite <- hits + mlen + offsets - 1
   hits <- hits + offsets
 
-  # Probably not very efficient:
-  f <- function(i) { hits[i]:hite[i] }
-  unlist(lapply(1:length(hits), f))
+  unlist(lapply(1:length(hits), function(i) hits[i]:hite[i]))
 
 }
 

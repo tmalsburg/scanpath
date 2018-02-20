@@ -2,19 +2,21 @@
 % Please edit documentation in R/fixsel.R
 \name{match.scanpath}
 \alias{match.scanpath}
-\title{Match scanpath patterns}
+\title{Identify scanpath patterns}
 \usage{
 match.scanpath(l, groups, expr, subpattern = 0)
 }
 \arguments{
-\item{l}{a vector of single characters.}
+\item{l}{a vector of single letters or single-digit integers each
+representing a fixation on a region of interest.}
 
-\item{groups}{a grouping variable.  The search for matching
-patterns in performed in each group separately.  Matches crossing
-group boundaries are not considered.  This vector will typically
-contain a trial id.}
+\item{groups}{a grouping variable indicating to which scanpath each
+fixation belongs.  The search for matching patterns in performed
+within each group separately and matches crossing group
+boundaries are not considered.}
 
-\item{expr}{a regular expression describing the target pattern.}
+\item{expr}{a regular expression describing the scanpath pattern of
+interest.}
 
 \item{subpattern}{the subpattern of interest.  If zero, the
 complete match will be marked.  If n>0, only the n-th subpattern
@@ -22,19 +24,37 @@ will be marked.  See examples.}
 }
 \value{
 A vector giving the indices of the matching
-  fixations.  Only the first match within each group will be
+  fixations.  Only the first match within each scanpath will be
   marked.
 }
 \description{
-This function matches contiguous sequences of fixations that follow
-a specified pattern.  This target pattern is specified using
-regular expressions.
+Identifies sequences of fixations that match a pattern specified
+using a regular expression.
 }
 \examples{
 data(eyemovements)
 words <- eyemovements$word
-l <- replace.all(words, letters[1:length(unique(words))])
 trial <- eyemovements$trial
-# Find fixations on word 6 (which is represented by letter "f"):
-idx <- match.scanpath(l, trial, "f")
+
+# Scanpaths from the last word until the end of the trial:
+idx <- match.scanpath(words, trial, "8.+")
+scanpaths1 <- eyemovements[idx,]
+plot_scanpaths(duration~x|trial, scanpaths1)
+
+# Scanpaths from third word until a fixation on the second word:
+idx <- match.scanpath(words, trial, "3.+2")
+scanpaths2 <- eyemovements[idx,]
+plot_scanpaths(duration~x|trial, scanpaths2)
+
+# Find scanpaths from the third word until the end of the trial but
+# only if they contain a fixation on the second word:
+idx <- match.scanpath(words, trial, "3.+2.*")
+scanpaths3 <- eyemovements[idx,]
+plot_scanpaths(duration~x|trial, scanpaths3)
+
+# Find scanpaths spanning words 6, 7, and 8 but only when those that
+# are directly preceded by a fixation on word 4:
+idx <- match.scanpath(words, trial, "4([678]+)", subpattern=1)
+scanpaths4 <- eyemovements[idx,]
+plot_scanpaths(duration~word|trial, scanpaths4)
 }
