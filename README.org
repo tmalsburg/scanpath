@@ -29,10 +29,10 @@
 An R package for analyzing scanpaths in eye movement data.  The package includes a simple toy dataset and example code.  Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for the details of this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]] and a PDF-version of this page [[https://github.com/tmalsburg/scanpath/blob/master/README.pdf?raw=true][here]].
 
 * News
+- [2018-02-20] :: The new default is no normalization of scasim scores.  Improved documentation and examples for ~find.fixation~ and ~match.scanpath~.  Minor improvement in functions for plotting scanpaths.
 - [2018-01-30] :: Version 1.06 doesn’t logarithmize fixation durations when calculating scanpath similarities.  (In previous versions, when ~normalize="durations"~ was used, the normalization was done using non-log-transformed durations, which could in some rare cases break the triangle inequality.)
 
 * Install
-
 To install the latest version of the package, execute the following commands:
 
 #+BEGIN_SRC R :eval no
@@ -41,27 +41,34 @@ install_github("tmalsburg/scanpath/scanpath", dependencies=TRUE)
 #+END_SRC
 
 * Usage example
-
-You can find all code shown below in the file [[file:README.R]].  You can open that file in RStudio and play with the code as you read through this mini-tutorial.
+The code shown below can also be found in the file [[file:README.R]].  Open that file in RStudio and play with it as you read through this mini-tutorial.
 
 Let's have a look at the toy data that is included in the package:
 
 #+BEGIN_SRC R :results table :exports both :colnames yes
+library(tidyverse)
+library(magrittr)
 library(scanpath)
 data(eyemovements)
+eyemovements %<>%
+  mutate(
+    x = round(x),
+    y = round(y))
+
 head(eyemovements)
 #+END_SRC
 
 #+RESULTS:
-| nfix | subject | trial | word |       x |       y | duration |
-|------+---------+-------+------+---------+---------+----------|
-|    0 | Anne    |     1 |    1 |  46.145 | 384.075 |      319 |
-|    1 | Anne    |     1 |    3 |   131.4 |  387.77 |      147 |
-|    2 | Anne    |     1 |    2 |  106.22 |  385.94 |       88 |
-|    3 | Anne    |     1 |    3 |  165.26 |  386.75 |      156 |
-|    4 | Anne    |     1 |    4 | 185.615 |  385.76 |      244 |
-|    5 | Anne    |     1 |    5 |  264.11 |  387.78 |      193 |
+| subject | trial | word |   x |   y | duration |
+|---------+-------+------+-----+-----+----------|
+| Anne    |     1 |    1 |  46 | 384 |      319 |
+| Anne    |     1 |    3 | 131 | 388 |      147 |
+| Anne    |     1 |    2 | 106 | 386 |       88 |
+| Anne    |     1 |    3 | 165 | 387 |      156 |
+| Anne    |     1 |    4 | 186 | 386 |      244 |
+| Anne    |     1 |    5 | 264 | 388 |      193 |
 
+** Plotting scanpaths
 To get a sense of what is going on in this data set, we create a series of plots.  For this purpose, we use the function ~plot_scanpaths~ from the /scanpath/ package.  In the first plot below, each panel shows the data from one trial.  There are three participants which are coded by color.  The data is from a sentence reading task.  The x-axis shows words and the y-axis time within trial in milliseconds.
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths.png :width 600 :height 600 :res 100
@@ -82,17 +89,116 @@ plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
 #+RESULTS:
 [[file:Plots/scanpaths2.png]]
 
-The function ~plot_scanpaths~ returns a /ggplot2/ object.  This means that we can style the plot before rendering it. For example, we can change the limits of the axes:
+The function ~plot_scanpaths~ returns a /ggplot/ object.  This means that we add more elements to the plot before rendering.  For example, we can labels the fixations with their index and change the limits of the axes:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths3.png :width 600 :height 600 :res 100
 plot_scanpaths(duration ~ x + y | trial, eyemovements, subject) +
+  geom_text(aes(label=i), vjust=2.5, show.legend=FALSE, size=3) +
   xlim(0, 600) + ylim(284, 484)
 #+END_SRC
 
 #+RESULTS:
 [[file:Plots/scanpaths3.png]]
 
-Now, we calculate the pair-wise similarities of the nine scanpaths in the dataset using the /scasim/ measure.  A simplifying intuition is that the measure quantifies the time that was spent looking at different things or at the same things in different order.  For a precise definition see [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]].
+** Extracting subsets of fixations or sub-scanpaths
+In many analyses, it is not desirable to analyze the complete scanpaths as recorded during the experiment but to analyze some subset of the fixations.  For instance, in a reading experiment, we might want to investigate how readers responded to a certain word and not care about what happened earlier.  The scanpath package offers two functions that can be used to easily pinpoint and extract the fixations of interest: ~find.fixation~ and ~match.scanpath~.
+
+The function ~find.fixation~ identifies fixations that match a set of criteria which can be specified using [[https://en.wikipedia.org/wiki/Regular_expression][regular expressions]].  For instance, the following code finds fixations on word 6:
+
+#+BEGIN_SRC R :exports both :results value table :colnames yes
+idx <- find.fixation(eyemovements$word, eyemovements$trial, "6")
+eyemovements[idx,]
+#+END_SRC
+
+#+RESULTS:
+| Anne    | 1 | 6 | 330.32 |  380.76 |   290 |
+| Anne    | 2 | 6 | 330.32 |  380.76 |   290 |
+| Anne    | 3 | 6 | 330.32 |  380.76 |   290 |
+| Anne    | 3 | 6 |  320.4 | 381.425 |   189 |
+| Udi     | 4 | 6 | 330.32 |  380.76 |   319 |
+| Udi     | 5 | 6 | 330.32 |  380.76 |   319 |
+| Udi     | 6 | 6 | 330.32 |  380.76 |   319 |
+| Udi     | 6 | 6 |  320.4 | 381.425 | 207.9 |
+| Gustave | 7 | 6 | 330.32 |  380.76 |   348 |
+| Gustave | 8 | 6 | 330.32 |  380.76 |   348 |
+| Gustave | 9 | 6 | 330.32 |  380.76 |   348 |
+| Gustave | 9 | 6 |  320.4 | 381.425 | 226.8 |
+
+Finding these fixations could also have been achieved with a subset operation.  However, if have more complex criteria for the fixations we’re interested in, things can get rather tricky.  For instance, a subset is not enough when we’re only interested in the second fixation on word 6 in each trial.  The following code extracts only those:
+
+#+BEGIN_SRC R :exports both :results value table :colnames yes
+idx <- find.fixation(eyemovements$word, eyemovements$trial, "6", nth=2)
+eyemovements[idx,]
+#+END_SRC
+
+#+RESULTS:
+| Anne    | 3 | 6 | 320.4 | 381.425 |   189 |
+| Udi     | 6 | 6 | 320.4 | 381.425 | 207.9 |
+| Gustave | 9 | 6 | 320.4 | 381.425 | 226.8 |
+
+Regular expressions also allow us to specify the context in which the fixations of interest appear.  For instance the code below finds fixations on word 3 but only those that are followed by fixations on word 4:
+
+#+BEGIN_SRC R :exports both :results value table :colnames yes
+idx <- find.fixation(eyemovements$word, eyemovements$trial, "34")
+eyemovements[idx,]
+#+END_SRC
+
+#+RESULTS:
+| Anne    | 1 | 3 | 165.26 | 386.75 |   156 |
+| Anne    | 2 | 3 | 165.26 | 386.75 |   156 |
+| Anne    | 3 | 3 | 165.26 | 386.75 |   156 |
+| Udi     | 4 | 3 | 165.26 | 386.75 | 171.6 |
+| Udi     | 5 | 3 | 165.26 | 386.75 | 171.6 |
+| Udi     | 6 | 3 | 165.26 | 386.75 | 171.6 |
+| Gustave | 7 | 3 | 165.26 | 386.75 | 187.2 |
+| Gustave | 8 | 3 | 165.26 | 386.75 | 187.2 |
+| Gustave | 9 | 3 | 165.26 | 386.75 | 187.2 |
+
+Here, we find fixations on word 3 that are preceded by fixations on word 1:
+
+#+BEGIN_SRC R :exports both :results value table :colnames yes
+idx <- find.fixation(eyemovements$word, eyemovements$trial, "1(3)", subpattern=1)
+eyemovements[idx,]
+#+END_SRC
+
+#+RESULTS:
+| Anne    | 1 | 3 | 131.4 | 387.77 |   147 |
+| Anne    | 2 | 3 | 131.4 | 387.77 |   147 |
+| Anne    | 3 | 3 | 131.4 | 387.77 |   147 |
+| Udi     | 4 | 3 | 131.4 | 387.77 | 161.7 |
+| Udi     | 5 | 3 | 131.4 | 387.77 | 161.7 |
+| Udi     | 6 | 3 | 131.4 | 387.77 | 161.7 |
+| Gustave | 7 | 3 | 131.4 | 387.77 | 176.4 |
+| Gustave | 8 | 3 | 131.4 | 387.77 | 176.4 |
+| Gustave | 9 | 3 | 131.4 | 387.77 | 176.4 |
+
+The following finds fixations on the last word but only of those that are not directly preceded by fixations on words 4 to 7:
+
+#+BEGIN_SRC R :exports both :results value table :colnames yes
+idx <- find.fixation(eyemovements$word, eyemovements$trial, "[^4-7](8)", subpattern=1)
+eyemovements[idx,]
+#+END_SRC
+
+#+RESULTS:
+| Anne    | 2 | 8 | 492.256666666667 | 381.916666666667 |   143 |
+| Udi     | 5 | 8 | 492.256666666667 | 381.916666666667 | 157.3 |
+| Gustave | 8 | 8 | 492.256666666667 | 381.916666666667 | 171.6 |
+
+The function ~match.scanpath~ works similarly but can be used to identify not just individual fixations but sequences of fixations (let’s call them scanpathlets).  For example, the following code finds scanpathslets spanning words 6, 7, and 8 but only those that directly preceded by a fixation on word 4:
+
+#+BEGIN_SRC R :results graphics :exports both :file Plots/scanpathslets.png :width 600 :height 200 :res 100
+idx <- match.scanpath(eyemovements$word, eyemovements$trial, "4([678]+)", subpattern=1)
+scanpathlets <- eyemovements[idx,]
+plot_scanpaths(duration~word|trial, scanpathlets)
+#+END_SRC
+
+#+RESULTS:
+[[file:Plots/scanpathslets.png]]
+
+See the documentation of ~find.fixation~ and ~match.scanpath~ for more details and examples.
+
+** Calculating scanpath dissimilarities
+Next, we calculate the pair-wise similarities of the nine scanpaths in the dataset using the /scasim/ measure.  A simplifying intuition is that the measure quantifies the time that was spent looking at different things (or at the same things but in different order).  For a precise definition see [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]].
 
 #+BEGIN_SRC R :results table :exports both :colnames yes :rownames yes
 d1 <- scasim(eyemovements, duration ~ x + y | trial, 512, 384, 60, 1/30,
@@ -138,9 +244,10 @@ round(d2, 2)
 
 The number are smaller now and can be interpreted as the proportion of time that was spent looking at different things.
 
+** Maps of scanpath space
 The numbers in the matrix above capture a lot of information about the scanpath variance in the data set.  However, dissimilarity scores are somewhat tricky to analyze.  One problem is that these values have strong statistical dependencies.  When we change one scanpath, this affects /n/ dissimilarity scores.  This has to be kept in mind when doing inferential stats directly on the dissimilarity scores.  While there are solutions for this, it is typically more convenient to produce a representation of scanpath variance that is free from this problem.  One such representation is what we call the “map of scanpath space.”  On such a map, every point represents a scanpath and the distances on the map reflect the dissimilarities according to our scanpath measure, i.e. the dissimilarity scores in the matrix above.
 
-The method for calculating these maps is called multi-dimensional scaling and one simple version of the general idea is implemented in the function ~cmdscale~.
+The method for calculating these maps is called multi-dimensional scaling and one simple version of the general idea is implemented in the function ~cmdscale~ (see also ~isoMDS~ in the ~MASS~ package).
 
 #+BEGIN_SRC R :results table :exports both :colnames yes :rownames yes
 map <- cmdscale(d2)
