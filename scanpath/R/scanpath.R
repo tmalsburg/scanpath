@@ -268,6 +268,9 @@ prepare.data <- function(data, formula)
     colnames(df) <- c("duration", "x", "trial")
   else
     colnames(df) <- c("duration", "x", "y", "trial")
+
+  df$i <- stats::ave(df$trial, df$trial, FUN=seq_along)
+
   df
 }
 
