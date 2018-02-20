@@ -49,9 +49,12 @@ plot_scanpaths <- function(formula, d, groups=NULL) {
     stop("Formula for plotting has incorrect syntax.")
   }
 
-    ggplot2::theme(legend.position = "top") +
-    ggplot2::scale_colour_discrete(name = "Group:") +
-    ggplot2::scale_size(name = "Duration (log10):")
+  p <- p + ggplot2::theme(legend.position = "top")
+
+  if(length(unique(d$groups))>1)
+    p <- p + ggplot2::scale_colour_discrete(name = "Group:")
+
+  p
 }
 
 plot_scanpaths.1d <- function(d, terms) {
@@ -64,15 +67,15 @@ plot_scanpaths.1d <- function(d, terms) {
       duration = duration,
       x = rep(t$x, each=2),
       trial = t$trial[1],
-      group = rep(t$groups, each=2))
+      groups = rep(t$groups, each=2))
   })
 
   d <- do.call(rbind, l)
 
-  if (length(unique(d$group))==1) {
+  if (length(unique(d$groups))==1) {
     p <- ggplot2::ggplot(d, ggplot2::aes(x, duration))
   } else {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, duration, colour=group))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, duration, colour=groups))
   }
   
   p +
@@ -83,15 +86,16 @@ plot_scanpaths.1d <- function(d, terms) {
 
 plot_scanpaths.2d <- function(d, terms) {
 
-  if (length(unique(d$group))==1) {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log10(duration)))
+  if (length(unique(d$groups))==1) {
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=duration))
   } else {
-    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=log10(duration), colour=groups))
+    p <- ggplot2::ggplot(d, ggplot2::aes(x, y, size=duration, colour=groups))
   }
   
   p +
     ggplot2::geom_path(size=1) +
     ggplot2::geom_point(alpha=0.2) +
-    ggplot2::facet_wrap(~ trial)
+    ggplot2::facet_wrap(~ trial) +
+    ggplot2::scale_size_area(name="Duration:")
 
 }
