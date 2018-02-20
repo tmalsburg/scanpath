@@ -66,6 +66,7 @@ plot_scanpaths.1d <- function(d, terms) {
     data.frame(
       duration = duration,
       x = rep(t$x, each=2),
+      i = c(rbind(rep(NA, nrow(t)), t$i)),
       trial = t$trial[1],
       groups = rep(t$groups, each=2))
   })

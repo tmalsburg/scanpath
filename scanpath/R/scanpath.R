@@ -204,7 +204,7 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' text(map, labels=rownames(map))
 scasim <- function(data, formula, center_x, center_y, viewing_distance,
                    unit_size, modulator=0.83, data2=NULL, formula2=formula,
-                   normalize="fixations")
+                   normalize=FALSE)
 {
   data <- prepare.data(data, formula)
 
@@ -331,7 +331,7 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
     result <- result / (nrow(s) + nrow(t))
   else if (normalize=="durations")
     result <- result / (sum(s$duration) + sum(t$duration))
-  else if (normalize)
+  else if (normalize!=FALSE)
     stop("Unrecognized normalization parameter: ", normalize)
   result
 }
