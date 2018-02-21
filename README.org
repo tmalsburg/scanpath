@@ -67,7 +67,7 @@ head(eyemovements)
 To get a sense of what is going on in this data set, we create a series of plots.  For this purpose, we use the function ~plot_scanpaths~ from the /scanpath/ package.  In the first plot below, each panel shows the data from one trial.  There are three participants which are coded by color.  The data is from a sentence reading task.  The x-axis shows words and the y-axis time within trial in milliseconds.
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths.png :width 600 :height 600 :res 100
-plot_scanpaths(duration ~ word | trial, eyemovements, subject)
+plot_scanpaths(eyemovements, duration ~ word | trial, subject)
 #+END_SRC
 
 #+RESULTS:
@@ -78,7 +78,7 @@ We can see that the participants differ in their reading speed.  Also we see tha
 In the next plot, we use the fixations’ x- and y-coordinates.  Each circle is a fixation and the size of the circle represents the duration of the corresponding fixation.
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths2.png :width 600 :height 600 :res 100
-plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
+plot_scanpaths(eyemovements, duration ~ x + y | trial, subject)
 #+END_SRC
 
 #+RESULTS:
@@ -87,7 +87,7 @@ plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
 The function ~plot_scanpaths~ returns a /ggplot/ object.  This means that we add more elements to the plot before rendering.  For example, we can labels the fixations with their index and change the limits of the axes:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpaths3.png :width 600 :height 600 :res 100
-plot_scanpaths(duration ~ x + y | trial, eyemovements, subject) +
+plot_scanpaths(eyemovements, duration ~ x + y | trial, subject) +
   geom_text(aes(label=i), vjust=2.5, show.legend=FALSE, size=3) +
   xlim(0, 600) + ylim(284, 484)
 #+END_SRC
@@ -194,7 +194,7 @@ The function ~match.scanpath~ works similarly but can be used to identify not ju
 #+BEGIN_SRC R :results graphics :exports both :file Plots/scanpathslets.png :width 600 :height 200 :res 100
 idx <- match.scanpath(eyemovements$word, eyemovements$trial, "4([678]+)", subpattern=1)
 scanpathlets <- eyemovements[idx,]
-plot_scanpaths(duration~word|trial, scanpathlets)
+plot_scanpaths(scanpathlets, duration~word|trial)
 #+END_SRC
 
 #+RESULTS:
@@ -223,7 +223,7 @@ round(d1)
 | 8 |  980 |  526 | 1201 |  763 |  263 | 1005 |  545 |    0 |  810 |
 | 9 | 1670 | 1216 |  641 | 1509 | 1009 |  321 | 1355 |  810 |    0 |
 
-Like the function ~plot_scanpaths~, the function ~scasim~ takes a formula and a data frame as parameters.  The formula specifies which columns in the data frame should be used for the calculations.  To account for distortion due to visual perspective, the comparison of the scanpaths is carried out in visual field coordinates (latitude and longitude).  In order to transform the pixel coordinates provided by the eye-tracker to visual field coordinates, the ~scasim~ function needs some extra information.  The first is the position of the gaze when the participant looked straight ahead (512, 384, in the present case), the distance of the eyes from the screen (60 cm), and the size of one pixel in the unit that was used to specify the distance from the screen (1/30).  Finally, we have to specify a normalization procedure.  ~normalize=FALSE~ means that we don’t want to normalize.  See the documentation of the ~scasim~ function for details.
+Like the function ~plot_scanpaths~, the function ~scasim~ takes a data frame and a formula as parameters.  The formula specifies which columns in the data frame should be used for the calculations.  To account for distortion due to visual perspective, the comparison of the scanpaths is carried out in visual field coordinates (latitude and longitude).  In order to transform the pixel coordinates provided by the eye-tracker to visual field coordinates, the ~scasim~ function needs some extra information.  The first is the position of the gaze when the participant looked straight ahead (512, 384, in the present case), the distance of the eyes from the screen (60 cm), and the size of one pixel in the unit that was used to specify the distance from the screen (1/30).  Finally, we have to specify a normalization procedure.  ~normalize=FALSE~ means that we don’t want to normalize.  See the documentation of the ~scasim~ function for details.
 
 The time that was spent looking at different things of course depends on the duration of the two compared trials.  (total duration of the two compared scanpaths constitutes an upper bound).  This means that two long scanpaths may have a larger dissimilarity than two shorter scanpaths even if they look more similar.  Depending on the research question, this may be undesirable.  One way to get rid of the trivial influence of total duration is to normalize the dissimilarity scores.  For example, we can divide them by the total duration of the two compared scanpaths:
 

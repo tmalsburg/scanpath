@@ -5,22 +5,21 @@
 \title{This function plots a set of scanpaths, each scanpath in a separate
 panel.}
 \usage{
-plot_scanpaths(formula, d, groups = NULL)
+plot_scanpaths(data, formula, groups = NULL)
 }
 \arguments{
+\item{data}{is the data frame containing the variables used in the
+formula.}
+
 \item{formula}{specifies the format of the plots.  For example,
-\code{dur ~ word | trial} puts the words on the x-axis and time
+\code{dur ~ word | trial} puts words on the x-axis and time
 on the y-axis.  Each trial is plotted in its own panel.  This
 assumes that words are numbered in ascending order.  Another
 example: \code{dur ~ x + y | trial} plots a circle for each
 fixation.  The location of the circle is determined by the x- and
-y-coordinates of the fixation and its size by the
+y-coordinates of the fixation and its size (area) by the
 duration.  Other variables of interest can be used instead of
-duration, for example pupil size.  Note that the left-hand side
-variable is log-transformed in circle plots.}
-
-\item{d}{is the data frame containing the variables used in the
-formula.}
+duration, for example pupil size.}
 
 \item{groups}{a variable used to distinguish different groups of
 scanpaths by color.  Can be used to color-code conditions or
@@ -28,7 +27,8 @@ participants.}
 }
 \value{
 A ggplot object.  Can be modified before display, for
-  example, by adding axis limits etc.  See examples below.
+  example, by adding axis limits, labels, and titles, etc.  See
+  examples below.
 }
 \description{
 This function plots a set of scanpaths, each scanpath in a separate
@@ -36,10 +36,10 @@ panel.
 }
 \examples{
 data(eyemovements)
-plot_scanpaths(duration ~ word | trial, eyemovements)
-plot_scanpaths(duration ~ word | trial, eyemovements, subject)
-plot_scanpaths(duration ~ x + y | trial, eyemovements)
-plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
-p <- plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
+plot_scanpaths(eyemovements, duration ~ word | trial)
+plot_scanpaths(eyemovements, duration ~ word | trial, subject)
+plot_scanpaths(eyemovements, duration ~ x + y | trial)
+plot_scanpaths(eyemovements, duration ~ x + y | trial, subject)
+p <- plot_scanpaths(eyemovements, duration ~ x + y | trial, subject)
 p + ggplot2::xlim(0, 600) + ggplot2::ylim(284, 484)
 }
