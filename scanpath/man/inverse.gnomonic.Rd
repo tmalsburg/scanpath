@@ -11,11 +11,11 @@ inverse.gnomonic(x, y, center_x, center_y, distance, unit_size = 1)
 
 \item{y}{the y-coordinates of the points.}
 
-\item{center_x}{is the x-coodrinate of the point that is targeted
+\item{center_x}{is the x-coordinate of the point that is targeted
 when the eye looks straight ahead (usually the center of the
 screen).}
 
-\item{center_y}{is the y-coodrinate of the point that is targeted
+\item{center_y}{is the y-coordinate of the point that is targeted
 when the eye looks straight ahead (usually the center of the
 screen).}
 

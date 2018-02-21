@@ -39,22 +39,22 @@ trial <- eyemovements$trial
 # Scanpaths from the last word until the end of the trial:
 idx <- match.scanpath(words, trial, "8.+")
 scanpaths1 <- eyemovements[idx,]
-plot_scanpaths(duration~x|trial, scanpaths1)
+plot_scanpaths(scanpaths1, duration~x|trial)
 
 # Scanpaths from third word until a fixation on the second word:
 idx <- match.scanpath(words, trial, "3.+2")
 scanpaths2 <- eyemovements[idx,]
-plot_scanpaths(duration~x|trial, scanpaths2)
+plot_scanpaths(scanpaths2, duration~x|trial)
 
 # Find scanpaths from the third word until the end of the trial but
 # only if they contain a fixation on the second word:
 idx <- match.scanpath(words, trial, "3.+2.*")
 scanpaths3 <- eyemovements[idx,]
-plot_scanpaths(duration~x|trial, scanpaths3)
+plot_scanpaths(scanpaths3, duration~x|trial)
 
 # Find scanpaths spanning words 6, 7, and 8 but only those that
 # are directly preceded by a fixation on word 4:
 idx <- match.scanpath(words, trial, "4([678]+)", subpattern=1)
 scanpaths4 <- eyemovements[idx,]
-plot_scanpaths(duration~word|trial, scanpaths4)
+plot_scanpaths(scanpaths4, duration~word|trial)
 }

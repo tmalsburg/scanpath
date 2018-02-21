@@ -316,6 +316,58 @@ In this plot, color indicates to which cluster a scanpath belongs and the crosse
 
 Apart from cluster analyses there are many other ways to analyze scanpath variance.  See the articles listed below for more details.
 
+** How the sausage is made
+For educational purposes, the package also includes a pure-R implementation of the scasim measure in the form of the function ~rscasim~.  This function calculates the similarity of two scanpaths and returns the alignment of fixations obtained with the Needleman-Wunsch algorithm.
+
+#+BEGIN_SRC R :exports code
+s <- subset(eyemovements, trial==1)
+t <- subset(eyemovements, trial==9)
+alignment <- rscasim(s, t, duration ~ x + y | trial,
+                     512, 384, 60, 1/30)
+round(alignment)
+#+END_SRC
+
+#+BEGIN_SRC R :exports results :results value table :colnames yes
+alignment %>%
+  round %>%
+  mutate(
+    s = ifelse(is.na(s), "NA", s),
+    t = ifelse(is.na(t), "NA", t))
+#+END_SRC
+
+#+RESULTS:
+|  s |  t | cost |
+|----+----+------|
+|  1 |  1 |    4 |
+|  2 |  2 |   29 |
+|  3 |  3 |   18 |
+|  4 |  4 |   31 |
+|  5 |  5 |   49 |
+|  6 |  6 |   39 |
+|  7 |  7 |   58 |
+|  8 |  8 |   28 |
+|  9 |  9 |   30 |
+| 10 | 10 |   34 |
+| 11 | 11 |   55 |
+| NA | 12 |  146 |
+| NA | 13 |  222 |
+| NA | 14 |  151 |
+| NA | 15 |  216 |
+| NA | 16 |  227 |
+| NA | 17 |  161 |
+| NA | 18 |  172 |
+
+Each row in the table above describes one edit operation.  The columns ~s~ and ~t~ contain the indices of the fixations involved in the edit and the column ~cost~ shows the cost of the edit.  The sum of the values in the ~cost~ column is the total dissimilarity of the two scanpaths.
+
+If both ~s~ and ~t~ contain an index, this means that two fixations were matched.  If either column contains an NA, that means that a fixation in one scanpath had no matching counterpart in the other scanpath.  The alignment can be visualized with the function ~plot_alignment~:
+
+#+BEGIN_SRC R :results graphics :exports both :file Plots/alignment.png
+plot_alignment(s, t, alignment, duration ~ x + y | trial, 10, 20)
+#+END_SRC
+
+#+RESULTS:
+[[file:Plots/alignment.png]]
+
 * References
 
 - von der Malsburg, T., & Vasishth, S. (2011). What is the scanpath signature of syntactic reanalysis? Journal of Memory and Language, 65(2), 109–127. http://dx.doi.org/10.1016/j.jml.2011.02.004

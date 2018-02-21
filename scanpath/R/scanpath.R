@@ -56,10 +56,10 @@ constant.vars <- function (data, groups)
 #' @title Project points from a plane to a sphere.
 #' @param x the x-coordinates of the points.
 #' @param y the y-coordinates of the points.
-#' @param center_x is the x-coodrinate of the point that is targeted
+#' @param center_x is the x-coordinate of the point that is targeted
 #' when the eye looks straight ahead (usually the center of the
 #' screen).
-#' @param center_y is the y-coodrinate of the point that is targeted
+#' @param center_y is the y-coordinate of the point that is targeted
 #' when the eye looks straight ahead (usually the center of the
 #' screen).
 #' @param distance is the distance of the plane to the center of the
@@ -117,10 +117,10 @@ inverse.gnomonic <- function(x, y, center_x, center_y, distance,
 #' the fixation duration The right-hand side consist of terms that
 #' specify x- and y-coordinate of the fixations (in that order)
 #' conditioned on trial IDs.  See examples below.
-#' @param center_x is the x-coodrinate of the point that is targeted
+#' @param center_x is the x-coordinate of the point that is targeted
 #' when the eye looks straight ahead (usually the center of the
 #' screen).
-#' @param center_y is the y-coodrinate of the point that is targeted
+#' @param center_y is the y-coordinate of the point that is targeted
 #' when the eye looks straight ahead (usually the center of the
 #' screen).
 #' @param viewing_distance is the distance of the eyes to the
@@ -261,15 +261,27 @@ avg.group.dist <- function(d, groups) {
 # don't have to carry around the formula.)
 prepare.data <- function(data, formula)
 {
-  terms <- strsplit(deparse(formula), " [~+|] ")[[1]]
-  stopifnot(length(terms) %in% 3:4)
-  df <- data[terms]
-  if (length(terms)==3) 
-    colnames(df) <- c("duration", "x", "trial")
-  else
-    colnames(df) <- c("duration", "x", "y", "trial")
+  formula <- deparse(formula)
+  data <- as.data.frame(data)
 
-  df$i <- stats::ave(df$trial, df$trial, FUN=seq_along)
+  if (grepl("\\|", formula)) {
+    terms <- strsplit(formula, " [~+|] ")[[1]]
+    stopifnot(length(terms) %in% 3:4)
+    df <- data[terms]
+    if (length(terms)==3)
+      colnames(df) <- c("duration", "x", "trial")
+    else
+      colnames(df) <- c("duration", "x", "y", "trial")
+    # Number fixations within trial:
+    df$i <- stats::ave(df$trial, df$trial, FUN=seq_along)
+  } else {
+    terms <- strsplit(formula, " [~+] ")[[1]]
+    stopifnot(length(terms) == 3)
+    df <- data[terms]
+    colnames(df) <- c("duration", "x", "y")
+    # Number fixations within trial:
+    df$i <- 1:nrow(df)
+  }
 
   df
 }
@@ -334,6 +346,155 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
   else if (normalize!=FALSE)
     stop("Unrecognized normalization parameter: ", normalize)
   result
+}
+
+extract.alignment <- function(d, path) {
+
+  sop <- c()
+  top <- c()
+  cost <- c()
+  i <- nrow(d)
+  j <- ncol(d)
+  while (path[i,j]>0) {
+    if (path[i,j]==3) {          # Match:
+      sop <- c(i-1, sop)
+      top <- c(j-1, top)
+      cost <- c(d[i,j] - d[i-1,j-1], cost)
+      i <- i-1
+      j <- j-1
+    } else if (path[i,j]==2) {   # No match in s:
+      sop <- c(NA, sop)
+      top <- c(j-1, top)
+      cost <- c(d[i,j] - d[i,j-1], cost)
+      i <- i
+      j <- j-1
+    } else if (path[i,j]==1) {   # No match in t:
+      sop <- c(i-1, sop)
+      top <- c(NA, top)
+      cost <- c(d[i,j] - d[i-1,j], cost)
+      i <- i-1
+      j <- j
+    }
+  }
+
+  data.frame(s=sop, t=top, cost=cost)
+}
+
+#' Given two scanpaths, this function calculates their
+#' dissimilarity.  This is a slow pure-R implementation of the scasim
+#' measure written provided for educational purposes.  For analyses of
+#' larger data sets function \code{\link[scanpath]{scasim}} should be
+#' used.
+#'
+#' @title Calculate the similarity of two scanpaths
+#' @param s is a data frame containing the first scanpath.  Each line
+#'   represents one fixation.  The fixations have to be listed in
+#'   chronological order.  Required columns are: x- and y- coordinate
+#'   of fixations, and fixation durations.  See the example data set
+#'   provided with this package.
+#' @param t is the second scanpath.  Same format as for s.
+#' @param formula specifies which columns in the given data frame are
+#'   should be used.  The left-hand side specifies the column that
+#'   contains the fixation duration.  The right-hand side consist of
+#'   terms that specify x- and y-coordinate of the fixations (in that
+#'   order).  See examples below.
+#' @param center_x is the x-coordinate of the point that is targeted
+#'   when the eye looks straight ahead (usually the center of the
+#'   screen).
+#' @param center_y is the y-coordinate of the point that is targeted
+#'   when the eye looks straight ahead (usually the center of the
+#'   screen).
+#' @param viewing_distance is the distance of the eyes from the screen
+#'   in some arbitrary unit.
+#' @param unit_size the ratio of one unit of the coordinate system to
+#'   one of the units in which the viewing distance was
+#'   given.  Example: If the coordinates are pixels on a screen with
+#'   60 dpi and the unit of the distance is inches, \code{unit_size}
+#'   has to be set to 1/60.
+#' @param modulator specifies how spatial distances between fixations
+#'   are assessed.  When set to 0, any spatial divergence of two
+#'   compared fixations is penalized independently equally
+#'   strong.  When set to 1, the scanpaths are compared only with
+#'   respect to their temporal patterns and spatial distances between
+#'   matching pairs of fixations are ignored.  The default value
+#'   mimics the exponential drop-off in human visual acuity as we move
+#'   away from the center from the fovea.
+#' @return A data frame showing how fixations in the two scanpaths
+#'   were aligned.  Columns \code{s} and \code{t} contain the indices
+#'   of the fixations in scanpaths s and t, and the column ~cost~ the
+#'   cost of the edit operation.  The sum of the costs is the total
+#'   dissimilarity of s and t.  If either \code{s} or \code{t} contain
+#'   an NA, that means that a fixation in one scanpath didn't have a
+#'   matching counterpart in the other scanpath.
+#' @keywords eye movements scanpaths cluster
+#' @references
+#' von der Malsburg, T. and Vasishth, S. (2011). What is the scanpath
+#' signature of syntactic reanalysis? Journal of Memory and Language,
+#' 65(2):109-127.
+#'
+#' von der Malsburg, T., Vasishth, S., and Kliegl,
+#' R. (2012). Scanpaths in reading are informative about sentence
+#' processing. In Michael Carl, P. B. and Choudhary, K. K., editors,
+#' Proceedings of the First Workshop on Eye-tracking and Natural
+#' Language Processing, pages 37-53, Mumbai, India. The COLING 2012
+#' organizing committee.
+#' @author Titus von der Malsburg \email{malsburg@@posteo.de}
+#' @seealso \code{\link[scanpath]{scasim}}, \code{\link[scanpath]{plot_alignment}}
+#' @export
+#' @examples
+#' data(eyemovements)
+#' s <- subset(eyemovements, trial==1)
+#' t <- subset(eyemovements, trial==9)
+#' rscasim(s, t, duration ~ x + y | trial,
+#'         512, 384, 60, 1/30)
+rscasim <- function(s, t, formula, center_x, center_y, viewing_distance,
+                   unit_size, modulator=0.83) {
+
+  s <- prepare.data(s, formula)
+  t <- prepare.data(t, formula)
+  s <- cbind(s, inverse.gnomonic(s$x, s$y, center_x, center_y, viewing_distance, unit_size))
+  t <- cbind(t, inverse.gnomonic(t$x, t$y, center_x, center_y, viewing_distance, unit_size))
+
+  d <- matrix(0, nrow=nrow(s)+1, ncol=nrow(t)+1)
+  d[,1] <- cumsum(c(0, s$duration))
+  d[1,] <- cumsum(c(0, t$duration))
+  d
+
+  path <- matrix(0, nrow=nrow(s)+1, ncol=nrow(t)+1)
+  path[,1] <- 1
+  path[1,] <- 2
+  path[1,1] <- 0
+
+  for (i in 2:(nrow(s)+1)) {
+    # Loop over fixations in scanpath t:
+    for (j in 2:(nrow(t)+1)) {
+      # Calculating angle between fixation targets:
+      sa <- s$lon[i-1] / (180/pi)
+      ta <- t$lon[j-1] / (180/pi)
+      sb <- s$lat[i-1] / (180/pi)
+      tb <- t$lat[j-1] / (180/pi)
+      # This formula is not terribly precise but the error is way
+      # smaller than the spatial noise in current eye trackers.
+      angle <- acos(sin(sb) * sin(tb) +
+                    cos(sb) * cos(tb) * cos(sa - ta)) * (180/pi)
+      # Approximation of cortical magnification:
+      mixer <- modulator**angle
+      # Cost for substitution:
+      cost <- abs(t$duration[j-1] - s$duration[i-1]) * mixer +
+                 (t$duration[j-1] + s$duration[i-1]) * (1 - mixer);
+      # Select optimal edit operation:
+      operations <- c(d[i-1,   j] + s$duration[i-1], # No match in t
+                      d[i,   j-1] + t$duration[j-1], # No match in s
+                      d[i-1, j-1] + cost)            # Match
+      path[i,j] <- which.min(operations)
+      d[i,j] <- min(operations)
+    }
+  }
+
+  a <- extract.alignment(d, path)
+  stopifnot(sum(a$cost) == d[nrow(d),ncol(d)])
+
+  a
 }
 
 #' Given a matrix of similarities, this function identifies the item

@@ -21,11 +21,11 @@ the fixation duration The right-hand side consist of terms that
 specify x- and y-coordinate of the fixations (in that order)
 conditioned on trial IDs.  See examples below.}
 
-\item{center_x}{is the x-coodrinate of the point that is targeted
+\item{center_x}{is the x-coordinate of the point that is targeted
 when the eye looks straight ahead (usually the center of the
 screen).}
 
-\item{center_y}{is the y-coodrinate of the point that is targeted
+\item{center_y}{is the y-coordinate of the point that is targeted
 when the eye looks straight ahead (usually the center of the
 screen).}
 
