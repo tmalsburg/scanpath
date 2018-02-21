@@ -24,7 +24,7 @@
 #+LaTeX_HEADER: \let\enumerate\compactenum
 #+PROPERTY: header-args:R :session *R* :tangle yes :comments both :eval yes
 
-[[http://dx.doi.org/10.5281/zenodo.31800][https://zenodo.org/badge/doi/10.5281/zenodo.31800.svg]]
+@@html:<a href="http://dx.doi.org/10.5281/zenodo.31800"><img src="https://zenodo.org/badge/doi/10.5281/zenodo.31800.svg"></a>@@
 
 An R package for analyzing scanpaths in eye movement data.  The package includes a simple toy dataset and example code.  Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for the details of this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]] and a PDF-version of this page [[https://github.com/tmalsburg/scanpath/blob/master/README.pdf?raw=true][here]].
 
@@ -330,3 +330,7 @@ Apart from cluster analyses there are many other ways to analyze scanpath varian
 - von der Malsburg, T., Vasishth, S., & Kliegl, R. (2012). Scanpaths in reading are informative about sentence processing. In P. B. Michael Carl, & K. K. Choudhary, Proceedings of the First Workshop on Eye-tracking and Natural Language Processing (pp. 37–53). Mumbai, India: The COLING 2012 organizing committee.
 
 
+# Local Variables:
+# org-latex-inputenc-alist: (("utf8" . "utf8x"))
+# org-latex-pdf-process: ("pdflatex -interaction nonstopmode -output-directory %o %f")
+# End:
