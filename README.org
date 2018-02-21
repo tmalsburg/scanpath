@@ -29,6 +29,7 @@
 An R package for analyzing scanpaths in eye movement data.  The package includes a simple toy dataset and example code.  Consult [[https://www.sciencedirect.com/science/article/pii/S0749596X11000179][von der Malsburg & Vasishth (2011)]] for the details of this analysis method.  The manual of the package can be found [[https://github.com/tmalsburg/scanpath/blob/master/Documentation/scanpath-manual.pdf?raw=true][here]] and a PDF-version of this page [[https://github.com/tmalsburg/scanpath/blob/master/README.pdf?raw=true][here]].
 
 * News
+- [2018-02-21] :: Added new functions ~rscasim~ and ~plot_alignment~.  See section ’How the sausage is made’ below for details.  Also note that the order of parameters for ~plot_scanpaths~ has changed for consistency with ggplot2.
 - [2018-02-20] :: The new default is no normalization of scasim scores.  Improved documentation and examples for ~find.fixation~ and ~match.scanpath~.  Minor improvement in functions for plotting scanpaths.
 - [2018-01-30] :: Version 1.06 doesn’t logarithmize fixation durations when calculating scanpath similarities.  (In previous versions, when ~normalize="durations"~ was used, the normalization was done using non-log-transformed durations, which could in some rare cases break the triangle inequality.)
 
@@ -362,7 +363,7 @@ Each row in the table above describes one edit operation.  The columns ~s~ and ~
 If both ~s~ and ~t~ contain an index, this means that two fixations were matched.  If either column contains an NA, that means that a fixation in one scanpath had no matching counterpart in the other scanpath.  The alignment can be visualized with the function ~plot_alignment~:
 
 #+BEGIN_SRC R :results graphics :exports both :file Plots/alignment.png
-plot_alignment(s, t, alignment, duration ~ x + y | trial, 10, 20)
+plot_alignment(s, t, alignment, duration ~ x + y | trial, 10, 10)
 #+END_SRC
 
 #+RESULTS:
