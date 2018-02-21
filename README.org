@@ -50,12 +50,6 @@ library(tidyverse)
 library(magrittr)
 library(scanpath)
 data(eyemovements)
-eyemovements %<>%
-  mutate(
-    x = round(x),
-    y = round(y),
-    duration = round(duration))
-
 head(eyemovements)
 #+END_SRC
 
