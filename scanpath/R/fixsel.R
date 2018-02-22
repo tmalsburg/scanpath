@@ -164,18 +164,3 @@ match.scanpath <- function(l, groups, expr, subpattern=0) {
 
 }
 
-# p <- function(x) plot.scanpaths(dur~wn|id, d[x,])
-# 
-# # Extract sub-scanpaths where first E and then F is fixated:
-# p(extract.fix(d$wn, d$id, "EF"))
-# 
-# # More examples:
-# p(extract.fix(d$wn, d$id, "EF*"))
-# p(extract.fix(d$wn, d$id, "EF+"))
-# 
-# # Straight left-to-right reading:
-# p(extract.fix(d$wn, d$id, "A+B+C+D+E+F+G+"))
-# 
-# # Regression starting on F:
-# p(extract.fix(d$wn, d$id, "F[A-E]+[FG]"))
-
