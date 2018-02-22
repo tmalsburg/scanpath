@@ -3,6 +3,8 @@ MANPAGES=scanpath/man/avg.group.dist.Rd scanpath/man/constant.vars.Rd scanpath/m
 RSOURCES=scanpath/R/fixsel.R scanpath/R/plot_scanpaths.R scanpath/R/scanpath.R
 CSOURCES=scanpath/src/cscasim.c
 
+all: scanpath_1.06.tar.gz Documentation/scanpath-manual.pdf
+
 .PHONY: build clean install
 
 build: scanpath_1.06.tar.gz
