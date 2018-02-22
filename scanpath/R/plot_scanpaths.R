@@ -158,7 +158,13 @@ plot_alignment <- function(s, t, a, formula, offset_x=0, offset_y=0, nudge_x=0, 
     ggplot2::geom_text(ggplot2::aes(x=x.t+offset_x, y=y.t+offset_y, label=t), alpha=0.5, hjust=1, vjust=-1) +
     ggplot2::scale_color_identity(name="Fixation match:", labels=c("match", "no match"), guide="legend") +
     ggplot2::scale_size_area(name="Fixation duration:") +
-    ggplot2::labs(x="x (pixels)", y="y (pixels)")
+    ggplot2::labs(x="x (pixels)", y="y (pixels)") -> p
 
+  if (offset_x!=0)
+    p + ggplot2::scale_x_continuous(name="x of scanpath s (pixels)", sec.axis=ggplot2::sec_axis(~.+offset_x, name="x of scanpath t (pixels)")) -> p
+  if (offset_y!=0)
+    p + ggplot2::scale_y_continuous(name="y of scanpath s (pixels)", sec.axis=ggplot2::sec_axis(~.+offset_y, name="y of scanpath t (pixels)")) -> p
+
+  p
 }
 

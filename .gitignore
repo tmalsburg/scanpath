@@ -4,3 +4,15 @@ scanpath.Rcheck
 scanpath_1.05.tar.gz
 scanpath/src/symbols.rds
 /scanpath/R/.Rhistory
+/README.html
+/README.tex
+/.Rhistory
+/Resources/DemoApp/#scasim_demo.R#
+/Resources/DemoApp/Makefile
+/Resources/DemoApp/scasim_demo.R
+/Resources/DemoApp/scasim_demo.pyc
+/Resources/DemoApp/test.dat
+/Resources/DemoApp/test1.tsv
+/Resources/DemoApp/test2.dat
+/Resources/DemoApp/test3.dat
+/scanpath/data/.Rhistory
