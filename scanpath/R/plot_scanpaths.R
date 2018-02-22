@@ -157,7 +157,7 @@ plot_alignment <- function(s, t, a, formula, offset_x=0, offset_y=0, nudge_x=0, 
     ggplot2::geom_text(ggplot2::aes(label=s), alpha=0.5, hjust=1, vjust=-1) +
     ggplot2::geom_text(ggplot2::aes(x=x.t+offset_x, y=y.t+offset_y, label=t), alpha=0.5, hjust=1, vjust=-1) +
     ggplot2::scale_color_identity(name="Fixation match:", labels=c("match", "no match"), guide="legend") +
-    ggplot2::scale_size_area(name="Fixation duration:", breaks=c(100, 200, 300), labels=scales::unit_format("ms")) +
+    ggplot2::scale_size_area(name="Fixation duration:") +
     ggplot2::labs(x="x (pixels)", y="y (pixels)")
 
 }
