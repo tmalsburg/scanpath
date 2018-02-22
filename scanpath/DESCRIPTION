@@ -11,5 +11,5 @@ Description: Provides a similarity measure for scanpaths that is sensitive to
     oculo-motor control.
 License: GPL-2
 LazyLoad: yes
-Imports: ggplot2, dplyr, gdata
+Imports: ggplot2, dplyr
 RoxygenNote: 6.0.1
