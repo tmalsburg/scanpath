@@ -2,6 +2,9 @@
 #+AUTHOR: Titus von der Malsburg
 #+EMAIL: malsburg@uni-potsdam.de
 
+* Purpose
+Can be used to draw scanpaths, to see their dissimilarity according to the scasim measure, and how fixations in the two scanpaths are matched.  For educational purposes.  For analysis, use the [[https://github.com/tmalsburg/scanpath][R package]] (recommended) or the [[https://github.com/tmalsburg/scanpath/blob/master/Resources/scasim.py][Python implementation]] of the measure.
+
 * Install
 - Download the [[file:scasim_demo.py][demo app]].
 - Open a terminal in the directory containing the app.
