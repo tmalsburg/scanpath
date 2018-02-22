@@ -1,0 +1,24 @@
+#+TITLE: App demonstrating the scasim measure of scanpath similarity
+#+AUTHOR: Titus von der Malsburg
+#+EMAIL: malsburg@uni-potsdam.de
+
+* Install
+- Download the [[file:scasim_demo.py][demo app]].
+- Open a terminal in the directory containing the app.
+- Enter the command: ~python scasim_demo.py~.
+
+This assumes that Python 2.7 is installed on your system.  (Should be given on any Linux and Mac OSX system.)
+
+* Screenshot
+[[file:screenshot.png]]
+
+* Usage
+The bar at the right shows the dissimilarity of the two scanpaths as a proportion of the total time of the scanpaths.  If the Levenshtein metric is used, the bar shows the edit-distance divided by the number total number of fixations.  When using the Levenshtein metric, the quadrants of the grid define the regions of interest.
+
+Scanpaths can be moved via drag-and-drop.  Fixations can be moved via drag-and-drop while pressing the shift key.  The duration of fixations can be changed by placing the mouse pointer on them and then using the mouse wheel.  New fixations can be created by double-clicking on the canvas at the position where you want them.  Fixations can be deleted by double-clicking on them while pressing the shift key.
+
+Keyboard shortcuts:
+- ~control + s~ saves the scanpaths in tab-separated-values format (tsv).
+- ~q~ quit the demo app.
+- ~control + z~ is for undo.
+- ~control + shift + z~ is for redo.
