@@ -30,6 +30,9 @@
 #' p + ggplot2::xlim(0, 600) + ggplot2::ylim(284, 484)
 plot_scanpaths <- function(data, formula, groups=NULL) {
 
+  if(is.data.frame(formula) || inherits(data, "formula"))
+    stop("Order of arguments has changed: data goes first, the formula second (for consistency with the tidyverse framework). Sorry for the inconvenience.")
+
   groups <- eval(substitute(groups), data, parent.frame())
   data <- prepare.data(data, formula)
   if (is.null(groups)) {
