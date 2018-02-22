@@ -18,12 +18,6 @@ library(tidyverse)
 library(magrittr)
 library(scanpath)
 data(eyemovements)
-eyemovements %<>%
-  mutate(
-    x = round(x),
-    y = round(y),
-    duration = round(duration))
-
 head(eyemovements)
 ## Usage example:1 ends here
 
@@ -32,7 +26,7 @@ head(eyemovements)
 
 
 ## [[file:~/usr/src/scanpath/README.org::*Plotting%20scanpaths][Plotting scanpaths:1]]
-plot_scanpaths(duration ~ word | trial, eyemovements, subject)
+plot_scanpaths(eyemovements, duration ~ word | trial, subject)
 ## Plotting scanpaths:1 ends here
 
 
@@ -46,7 +40,7 @@ plot_scanpaths(duration ~ word | trial, eyemovements, subject)
 
 
 ## [[file:~/usr/src/scanpath/README.org::*Plotting%20scanpaths][Plotting scanpaths:2]]
-plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
+plot_scanpaths(eyemovements, duration ~ x + y | trial, subject)
 ## Plotting scanpaths:2 ends here
 
 
@@ -58,7 +52,7 @@ plot_scanpaths(duration ~ x + y | trial, eyemovements, subject)
 
 
 ## [[file:~/usr/src/scanpath/README.org::*Plotting%20scanpaths][Plotting scanpaths:3]]
-plot_scanpaths(duration ~ x + y | trial, eyemovements, subject) +
+plot_scanpaths(eyemovements, duration ~ x + y | trial, subject) +
   geom_text(aes(label=i), vjust=2.5, show.legend=FALSE, size=3) +
   xlim(0, 600) + ylim(284, 484)
 ## Plotting scanpaths:3 ends here
@@ -178,7 +172,7 @@ eyemovements[idx,]
 ## [[file:~/usr/src/scanpath/README.org::*Extracting%20subsets%20of%20fixations%20or%20sub-scanpaths][Extracting subsets of fixations or sub-scanpaths:6]]
 idx <- match.scanpath(eyemovements$word, eyemovements$trial, "4([678]+)", subpattern=1)
 scanpathlets <- eyemovements[idx,]
-plot_scanpaths(duration~word|trial, scanpathlets)
+plot_scanpaths(scanpathlets, duration~word|trial)
 ## Extracting subsets of fixations or sub-scanpaths:6 ends here
 
 ## Calculating scanpath dissimilarities
@@ -205,7 +199,7 @@ round(d1)
 ## | 8 |  980 |  526 | 1201 |  763 |  263 | 1005 |  545 |    0 |  810 |
 ## | 9 | 1670 | 1216 |  641 | 1509 | 1009 |  321 | 1355 |  810 |    0 |
 
-## Like the function ~plot_scanpaths~, the function ~scasim~ takes a formula and a data frame as parameters.  The formula specifies which columns in the data frame should be used for the calculations.  To account for distortion due to visual perspective, the comparison of the scanpaths is carried out in visual field coordinates (latitude and longitude).  In order to transform the pixel coordinates provided by the eye-tracker to visual field coordinates, the ~scasim~ function needs some extra information.  The first is the position of the gaze when the participant looked straight ahead (512, 384, in the present case), the distance of the eyes from the screen (60 cm), and the size of one pixel in the unit that was used to specify the distance from the screen (1/30).  Finally, we have to specify a normalization procedure.  ~normalize=FALSE~ means that we don’t want to normalize.  See the documentation of the ~scasim~ function for details.
+## Like the function ~plot_scanpaths~, the function ~scasim~ takes a data frame and a formula as parameters.  The formula specifies which columns in the data frame should be used for the calculations.  To account for distortion due to visual perspective, the comparison of the scanpaths is carried out in visual field coordinates (latitude and longitude).  In order to transform the pixel coordinates provided by the eye-tracker to visual field coordinates, the ~scasim~ function needs some extra information.  The first is the position of the gaze when the participant looked straight ahead (512, 384, in the present case), the distance of the eyes from the screen (60 cm), and the size of one pixel in the unit that was used to specify the distance from the screen (1/30).  Finally, we have to specify a normalization procedure.  ~normalize=FALSE~ means that we don’t want to normalize.  See the documentation of the ~scasim~ function for details.
 
 ## The time that was spent looking at different things of course depends on the duration of the two compared trials.  (total duration of the two compared scanpaths constitutes an upper bound).  This means that two long scanpaths may have a larger dissimilarity than two shorter scanpaths even if they look more similar.  Depending on the research question, this may be undesirable.  One way to get rid of the trivial influence of total duration is to normalize the dissimilarity scores.  For example, we can divide them by the total duration of the two compared scanpaths:
 
@@ -286,3 +280,56 @@ plot(map, cex=4, col=clusters$cluster, pch=19)
 text(map, labels=rownames(map), col="white")
 points(clusters$centers, col="blue", pch=3, cex=4)
 ## Maps of scanpath space:4 ends here
+
+## How the sausage is made
+## For educational purposes, the package also includes a pure-R implementation of the scasim measure in the form of the function ~rscasim~.  This function calculates the similarity of two scanpaths and returns the alignment of fixations obtained with the Needleman-Wunsch algorithm.
+
+
+## [[file:~/usr/src/scanpath/README.org::*How%20the%20sausage%20is%20made][How the sausage is made:1]]
+s <- subset(eyemovements, trial==1)
+t <- subset(eyemovements, trial==9)
+alignment <- rscasim(s, t, duration ~ x + y | trial,
+                     512, 384, 60, 1/30)
+round(alignment)
+## How the sausage is made:1 ends here
+
+## [[file:~/usr/src/scanpath/README.org::*How%20the%20sausage%20is%20made][How the sausage is made:2]]
+alignment %>%
+  round %>%
+  mutate(
+    s = ifelse(is.na(s), "NA", s),
+    t = ifelse(is.na(t), "NA", t))
+## How the sausage is made:2 ends here
+
+
+
+## #+RESULTS:
+## |  s |  t | cost |
+## |----+----+------|
+## |  1 |  1 |    4 |
+## |  2 |  2 |   29 |
+## |  3 |  3 |   18 |
+## |  4 |  4 |   31 |
+## |  5 |  5 |   49 |
+## |  6 |  6 |   39 |
+## |  7 |  7 |   58 |
+## |  8 |  8 |   28 |
+## |  9 |  9 |   30 |
+## | 10 | 10 |   34 |
+## | 11 | 11 |   55 |
+## | NA | 12 |  146 |
+## | NA | 13 |  222 |
+## | NA | 14 |  151 |
+## | NA | 15 |  216 |
+## | NA | 16 |  227 |
+## | NA | 17 |  161 |
+## | NA | 18 |  172 |
+
+## Each row in the table above describes one edit operation.  The columns ~s~ and ~t~ contain the indices of the fixations involved in the edit and the column ~cost~ shows the cost of the edit.  The sum of the values in the ~cost~ column is the total dissimilarity of the two scanpaths.
+
+## If both ~s~ and ~t~ contain an index, this means that two fixations were matched.  If either column contains an NA, that means that a fixation in one scanpath had no matching counterpart in the other scanpath.  The alignment can be visualized with the function ~plot_alignment~:
+
+
+## [[file:~/usr/src/scanpath/README.org::*How%20the%20sausage%20is%20made][How the sausage is made:3]]
+plot_alignment(s, t, alignment, duration ~ x + y | trial, 10, 10)
+## How the sausage is made:3 ends here
