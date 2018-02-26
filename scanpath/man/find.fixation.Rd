@@ -41,6 +41,13 @@ trial <- eyemovements$trial
 idx <- find.fixation(words, trial, "6")
 eyemovements[idx,]
 
+# Same, but use letters as region identifiers, which is necessary
+# when there are more than 10 regions.  (Code assumes that regions
+# are numbered in ascending order starting from 1.)
+w <- letters[match(words, 1:26)]
+idx <- find.fixation(w, trial, "f")
+eyemovements[idx,]
+
 # Find fixations on word 6 but only the second match within
 # a group (i.e., trial):
 idx <- find.fixation(words, trial, "6", nth=2)
