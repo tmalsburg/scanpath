@@ -283,6 +283,9 @@ prepare.data <- function(data, formula)
     df$i <- 1:nrow(df)
   }
 
+  if (any(is.na(df)))
+    stop("Eye movement data contains NAs.  Please supply data without NAs.")
+
   df
 }
 
