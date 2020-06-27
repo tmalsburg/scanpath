@@ -307,7 +307,7 @@ distances <- function(t, fun, t2=NULL) {
     for (i in 1:(length(t)-1))
       for (j in (i+1):length(t))
         m[j,i] <- m[i,j] <- fun(t[[i]], t[[j]])
-    colnames(m) <- rownames(m) <- unique(tid)
+    colnames(m) <- rownames(m) <- names(t)
   # Case where two sets of trials are processed:
   } else {
     tid <- t$trial
@@ -320,8 +320,8 @@ distances <- function(t, fun, t2=NULL) {
     for (i in 1:length(t))
       for (j in 1:length(t2))
         m[i,j] <- fun(t[[i]], t2[[j]])
-    rownames(m) <- unique(tid)
-    colnames(m) <- unique(t2id)
+    rownames(m) <- names(t)
+    colnames(m) <- names(t2)
   }
   return(m)
 }
