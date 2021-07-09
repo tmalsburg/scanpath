@@ -273,7 +273,10 @@ prepare.data <- function(data, formula)
     else
       colnames(df) <- c("duration", "x", "y", "trial")
     # Number fixations within trial:
-    df$i <- stats::ave(df$trial, df$trial, FUN=seq_along)
+    df$i <- stats::ave(
+                     as.integer(df$trial),
+                     as.integer(df$trial),
+                     FUN=seq_along)
   } else {
     terms <- strsplit(formula, " [~+] ")[[1]]
     stopifnot(length(terms) == 3)
