@@ -376,7 +376,9 @@ plot_alignment(s, t, alignment, duration ~ x + y | trial, 10, 10)
 - von der Malsburg, T., & Vasishth, S. (2011). What is the scanpath signature of syntactic reanalysis? Journal of Memory and Language, 65(2), 109–127. http://dx.doi.org/10.1016/j.jml.2011.02.004
 - von der Malsburg, T., Kliegl, R., & Vasishth, S. (2015). Determinants of scanpath regularity in reading. Cognitive Science, 39(7), 1675–1703. http://dx.doi.org/10.1111/cogs.12208
 - von der Malsburg, T., & Vasishth, S. (2013). Scanpaths reveal syntactic underspecification and reanalysis strategies. Language and Cognitive Processes, 28(10), 1545–1578. http://dx.doi.org/10.1080/01690965.2012.728232
-- von der Malsburg, T., Vasishth, S., & Kliegl, R. (2012). Scanpaths in reading are informative about sentence processing. In P. B. Michael Carl, & K. K. Choudhary, Proceedings of the First Workshop on Eye-tracking and Natural Language Processing (pp. 37–53). Mumbai, India: The COLING 2012 organizing committee.
+- von der Malsburg, T., Vasishth, S., & Kliegl, R. (2012). Scanpaths in reading are informative about sentence processing. In P. B. Michael Carl, & K. K. Choudhary, Proceedings of the First Workshop on Eye-tracking and Natural Language Processing (pp. 37–53). Mumbai, India: The COLING 2012 organizing committee. https://tmalsburg.github.io/MalsburgEtAl2012Coling.pdf
+- Parshina, O., Sekerina, I., Lopukhina, A., & von der Malsburg, Titus (2022). Monolingual and bilingual reading strategies in Russian: An exploratory scanpath analysis. Reading Research Quarterly, 57(2). http://dx.doi.org/10.1002/rrq.414
+
 
 
 # Local Variables:
