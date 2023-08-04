@@ -330,9 +330,18 @@ distances <- function(t, fun, t2=NULL) {
 }
 
 # Wrapper for the implementation in C:
-# s and t are data frames holding one trial each.
+# s and t are data frames holding one scanpath each.
 cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
 {
+  # If the two scanpaths are identical, we return 0
+  # straightaway:
+
+  if (all(nrow(s)    == nrow(t)) &&
+      all(s$lon      == t$lon)   &&
+      all(s$lat      == t$lat)   &&
+      all(s$duration == t$duration))
+    return(0)
+
   result <- .C(cscasim,
      as.integer(length(s$lon)),
      as.double(s$lon),
@@ -342,7 +351,7 @@ cscasim.wrapper <- function(s, t, modulator=0.83, normalize)
      as.double(t$lon),
      as.double(t$lat),
      as.double(t$duration),
-     modulator,
+     as.double(modulator),
      result = double(1))$result
 
   if (normalize=="fixations")
